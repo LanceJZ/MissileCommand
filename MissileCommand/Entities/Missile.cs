@@ -12,15 +12,23 @@ namespace MissileCommand.Entities
 {
     using Mod = AModel;
 
-    public class EnemyMissile : Mod
+    public class Missile : Mod
     {
         Mod Trail;
         Vector3 Target;
+        Timer TrailTimer;
 
-        public EnemyMissile(Game game, float gameScale) : base(game)
+        public Vector3 TrailColor
+        {
+            set => Trail.DefuseColor = value;
+        }
+
+
+        public Missile(Game game, float gameScale) : base(game)
         {
             GameScale = gameScale;
             Trail = new Mod(game);
+            TrailTimer = new Timer(game, 0.0666f);
 
             LoadContent();
             BeginRun();
@@ -28,9 +36,7 @@ namespace MissileCommand.Entities
 
         public override void Initialize()
         {
-            DefuseColor = new Vector3(0.1f, 1, 1);
             ModelScale = new Vector3(1);
-            Radius = 1;
 
             base.Initialize();
         }
@@ -44,7 +50,6 @@ namespace MissileCommand.Entities
         public override void BeginRun()
         {
             Trail.Moveable = false;
-            Trail.DefuseColor = new Vector3(1, 0, 0);
             Trail.ModelScale = new Vector3(1.5f);
 
             base.BeginRun();
@@ -54,7 +59,11 @@ namespace MissileCommand.Entities
         {
             if (Active)
             {
-                Trail.ModelScale = new Vector3(Vector3.Distance(Trail.Position, Position), 1.5f, 1);
+                if (TrailTimer.Expired)
+                {
+                    TrailTimer.Reset();
+                    Trail.ModelScale = new Vector3(Vector3.Distance(Trail.Position, Position), 1.5f, 1);
+                }
             }
 
             base.Update(gameTime);
@@ -62,16 +71,28 @@ namespace MissileCommand.Entities
 
         public void Spawn(Vector3 position)
         {
+            Spawn(position, new Vector3(Services.RandomMinMax(-480, 450), -450, 0), 10);
+        }
+
+        public void Spawn(Vector3 position, Vector3 target, float speed)
+        {
             Position = position;
+            Target = target;
             Active = true;
+            TrailTimer.Enabled = true;
             Trail.Active = true;
             Trail.Position = position;
             Trail.Position.Z = -2;
-            Target = new Vector3(Services.RandomMinMax(-480, 450), -450, 0);
             Trail.Rotation = new Vector3(0, 0, AngleFromVectors(position, Target));
             Rotation = Trail.Rotation;
-            Velocity = SetVelocity(AngleFromVectors(position, Target), 10);
+            Velocity = SetVelocity(AngleFromVectors(position, Target), speed);
         }
 
+        public void Destroyed()
+        {
+            Active = false;
+            TrailTimer.Enabled = false;
+            Trail.Active = false;
+        }
     }
 }

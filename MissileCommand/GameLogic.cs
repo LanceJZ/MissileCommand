@@ -16,14 +16,16 @@ namespace MissileCommand
 
         Background TheBackground;
         EnemyMissileController Missiles;
+        Player ThePlayer;
 
         Timer FPSTimer;
         float FPSFrames = 0;
 
         public GameLogic(Game game) : base(game)
         {
+            ThePlayer = new Player(game, GameScale);
             TheBackground = new Background(game, GameScale);
-            Missiles = new EnemyMissileController(game, GameScale, TheBackground);
+            Missiles = new EnemyMissileController(game, GameScale, TheBackground, ThePlayer);
             FPSTimer = new Timer(game, 1);
 
             // Screen resolution is 1200 X 900.

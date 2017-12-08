@@ -66,7 +66,7 @@
     <Compile Include="Engine\Words.cs" />
     <Compile Include="Entities\Background.cs" />
     <Compile Include="Entities\City.cs" />
-    <Compile Include="Entities\EnemyMissile.cs" />
+    <Compile Include="Entities\Missile.cs" />
     <Compile Include="Entities\EnemyMissileController.cs" />
     <Compile Include="Entities\Player.cs" />
     <Compile Include="Game1.cs" />

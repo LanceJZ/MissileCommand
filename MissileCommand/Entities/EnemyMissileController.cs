@@ -10,19 +10,25 @@ using Engine;
 
 namespace MissileCommand.Entities
 {
-    using Mod = Engine.AModel;
-
     public class EnemyMissileController : GameComponent, IBeginable, IUpdateableComponent, ILoadContent
     {
-        List<EnemyMissile> Missiles;
+        List<Missile> Missiles;
         Background BackgroundRef;
-        float GameScale;
+        Player PlayerRef;
 
-        public EnemyMissileController(Game game, float gameScale, Background background) : base(game)
+        Timer FireTimer;
+        float GameScale;
+        int MaxNumberOfMissiles = 100;
+        int Group = 4;
+
+        public EnemyMissileController(Game game, float gameScale, Background background, Player player) : base(game)
         {
             GameScale = gameScale;
-            Missiles = new List<EnemyMissile>();
+            Missiles = new List<Missile>();
             BackgroundRef = background;
+            PlayerRef = player;
+            FireTimer = new Timer(game, 0.666f);
+
 
             game.Components.Add(this);
         }
@@ -42,22 +48,29 @@ namespace MissileCommand.Entities
 
         public void BeginRun()
         {
-            for (int ii = 0; ii < 10; ii++)
-            {
-                float SpawnX = Services.RandomMinMax(-400, 400);
 
-                for (int i = 0; i < 4; i++)
-                {
-                    Missiles.Add(new EnemyMissile(Game, GameScale));
-                    Missiles.Last().Spawn(new Vector3(SpawnX, 450, 0));
-                }
-            }
         }
 
         public override void Update(GameTime gameTime)
         {
+            if (FireTimer.Expired)
+            {
+                FireTimer.Reset();
+                if (Missiles.Count < MaxNumberOfMissiles)
+                {
+                    FireMissile(Services.RandomMinMax(-400, 400));
+                }
+            }
 
             base.Update(gameTime);
+        }
+
+        void FireMissile(float spawnX)
+        {
+            Missiles.Add(new Missile(Game, GameScale));
+            Missiles.Last().Spawn(new Vector3(spawnX, 450, 0));
+            Missiles.Last().DefuseColor = new Vector3(0.1f, 1, 1);
+            Missiles.Last().TrailColor = new Vector3(1, 0, 0);
         }
     }
 }
