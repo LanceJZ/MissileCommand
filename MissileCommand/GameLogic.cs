@@ -12,11 +12,19 @@ namespace MissileCommand
 {
     public class GameLogic : GameComponent, IBeginable, IUpdateableComponent, ILoadContent
     {
+        float GameScale = 1.91f;
+
         Background TheBackground;
+        EnemyMissileController Missiles;
+
+        Timer FPSTimer;
+        float FPSFrames = 0;
 
         public GameLogic(Game game) : base(game)
         {
-            TheBackground = new Background(game);
+            TheBackground = new Background(game, GameScale);
+            Missiles = new EnemyMissileController(game, GameScale, TheBackground);
+            FPSTimer = new Timer(game, 1);
 
             // Screen resolution is 1200 X 900.
             game.Components.Add(this);
@@ -42,6 +50,14 @@ namespace MissileCommand
 
         public override void Update(GameTime gameTime)
         {
+            FPSFrames++;
+
+            if(FPSTimer.Expired)
+            {
+                FPSTimer.Reset();
+                System.Diagnostics.Debug.WriteLine(FPSFrames.ToString());
+                FPSFrames = 0;
+            }
 
             base.Update(gameTime);
         }

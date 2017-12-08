@@ -13,13 +13,18 @@ namespace Engine
 {
     public class AModel : PositionedObject, IDrawComponent, ILoadContent
     {
-        public XnaModel XNAModel { get; private set; }
-        public bool Visable { get => m_Visable; set => m_Visable = value; }
         public Vector3 DefuseColor = new Vector3(1,1,1);
         Texture2D XNATexture;
-        private Matrix[] ModelTransforms;
-        private Matrix BaseWorld;
+        Matrix[] ModelTransforms;
+        Matrix BaseWorld;
+        Vector3 m_ModelScale = new Vector3(1);
         bool m_Visable = true;
+
+        public XnaModel XNAModel { get; private set; }
+        public bool Visable { get => m_Visable; set => m_Visable = value; }
+        public BoundingSphere Sphere { get => XNAModel.Meshes[0].BoundingSphere; }
+        public float SphereRadius { get => XNAModel.Meshes[0].BoundingSphere.Radius; }
+        public Vector3 ModelScale { get => m_ModelScale; set => m_ModelScale = value; }
 
         public AModel (Game game) : base(game)
         {
@@ -76,7 +81,7 @@ namespace Engine
             // translation, rotation, and scaling
             BaseWorld = Matrix.Identity;
 
-            BaseWorld = Matrix.CreateScale(Scale)
+            BaseWorld = Matrix.CreateScale(m_ModelScale)
                 * Matrix.CreateFromYawPitchRoll(Rotation.Y, Rotation.X, Rotation.Z)
                 * Matrix.CreateTranslation(Position);
 
@@ -116,6 +121,43 @@ namespace Engine
                     mesh.Draw();
                 }
             }
+        }
+
+        /// <summary>
+        /// Sphere collusion detection. Target sphere will be compared to this class's.
+        /// Will return true of they intersect on the X and Y plane.
+        /// The Z plane is ignored.
+        /// </summary>
+        /// <param name="Target">Target Positioned Object.</param>
+        /// <returns></returns>
+        public bool SphereIntersect2D(AModel Target)
+        {
+            float distanceX = Target.Position.X - Position.X;
+            float distanceY = Target.Position.Y - Position.Y;
+            float radius = (SphereRadius * Scale) + (Target.SphereRadius * Scale);
+
+            if ((distanceX * distanceX) + (distanceY * distanceY) < radius * radius)
+                return true;
+
+            return false;
+        }
+
+        /// <summary>
+        /// Sphere collusion detection. Target sphere will be compared to this class's.
+        /// </summary>
+        /// <param name="Target">Target Positioned Object.</param>
+        /// <returns></returns>
+        public bool SphereIntersect(AModel Target)
+        {
+            float distanceX = Target.Position.X - Position.X;
+            float distanceY = Target.Position.Y - Position.Y;
+            float distanceZ = Target.Position.Z - Position.Z;
+            float radius = (SphereRadius * Scale) + (Target.SphereRadius * Scale);
+
+            if ((distanceX * distanceX) + (distanceY * distanceY) + (distanceZ * distanceZ) < radius * radius)
+                return true;
+
+            return false;
         }
 
         public void SetModel(XnaModel model)

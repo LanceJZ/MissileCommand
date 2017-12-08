@@ -28,6 +28,7 @@ namespace Engine
 		//short[] indexData; // The index array used to render the AABB.
 		//VertexPositionColor[] aabbVertices; // The AABB vertex array (used for rendering).
 		float m_ScalePercent = 1;
+        float m_GameScale = 1;
 		float m_Radius = 0;
         Vector2 m_HeightWidth;
 		bool m_Hit = false;
@@ -94,12 +95,11 @@ namespace Engine
 
         public Vector2 WidthHeight { get => m_HeightWidth; set => m_HeightWidth = value; }
 
+        public float GameScale { get => m_GameScale; set => m_GameScale = value; }
+
         public Rectangle BoundingBox
         {
-            get
-            {
-                return new Rectangle((int)Position.X, (int)Position.Y, (int)WidthHeight.X, (int)WidthHeight.Y);
-            }
+            get => new Rectangle((int)Position.X, (int)Position.Y, (int)WidthHeight.X, (int)WidthHeight.Y);
         }
         #endregion
         #region Constructor

@@ -17,14 +17,17 @@ namespace MissileCommand.Entities
         Mod[] Ground = new Mod[5];
         City[] Cities = new City[6];
 
+        float GameScale;
+
         public City[] TheCities
         {
             get => Cities;
         }
 
-
-        public Background(Game game) : base(game)
+        public Background(Game game, float gameScale) : base(game)
         {
+            GameScale = gameScale;
+
             for (int ii = 0; ii < 3; ii++)
             {
                 for (int i = 0; i < 10; i++)
@@ -50,24 +53,23 @@ namespace MissileCommand.Entities
 
         public override void Initialize()
         {
-            float scale = 1.91f;
-            float posX = -(253 * scale);
+            float posX = -(253 * GameScale);
 
             foreach (Mod plot in Ground)
             {
-                plot.Scale = scale;
+                plot.ModelScale = new Vector3(GameScale);
                 plot.Position.Z = -10;
                 plot.Position.Y = (-Services.WindowHeight / 2);// + (14.5f * 1.9f);
                 plot.Position.X = posX;
                 plot.Moveable = false;
                 plot.DefuseColor = new Vector3(1, 1, 0); //Yellow
-                posX += (126 * scale);
+                posX += (126 * GameScale);
             }
 
             foreach (City city in Cities)
             {
-                city.Scale = scale;
-                city.Position.Y = Ground[0].Position.Y + (12 * scale) + (14.5f * scale);
+                city.ModelScale = new Vector3(GameScale);
+                city.Position.Y = Ground[0].Position.Y + (12 * GameScale) + (14.5f * GameScale);
                 city.DefuseColor = new Vector3(0.2f, 0.1f, 2.5f); // Reddish Blue
             }
 
@@ -76,12 +78,12 @@ namespace MissileCommand.Entities
                 missile.DefuseColor = new Vector3(0.2f, 0.1f, 2.5f); // Reddish Blue
             }
 
-            Cities[0].Position.X = -240 * scale;
-            Cities[1].Position.X = -129 * scale;
-            Cities[2].Position.X = -53 * scale;
-            Cities[3].Position.X = 53 * scale;
-            Cities[4].Position.X = 134 * scale;
-            Cities[5].Position.X = 216 * scale;
+            Cities[0].Position.X = -240 * GameScale;
+            Cities[1].Position.X = -129 * GameScale;
+            Cities[2].Position.X = -53 * GameScale;
+            Cities[3].Position.X = 53 * GameScale;
+            Cities[4].Position.X = 134 * GameScale;
+            Cities[5].Position.X = 216 * GameScale;
 
             for (int i = 0; i < 3; i++)
             {

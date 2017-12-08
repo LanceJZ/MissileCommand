@@ -14,40 +14,48 @@ namespace MissileCommand.Entities
 
     public class EnemyMissile : Mod
     {
-        List<Mod> Trail;
-        XnaModel TrailModel;
-        Vector3 TrailColor;
+        Mod Trail;
+        Vector3 Target;
 
-        public EnemyMissile(Game game) : base(game)
+        public EnemyMissile(Game game, float gameScale) : base(game)
         {
-            Trail = new List<Mod>();
+            GameScale = gameScale;
+            Trail = new Mod(game);
+
+            LoadContent();
+            BeginRun();
         }
 
         public override void Initialize()
         {
             DefuseColor = new Vector3(0.1f, 1, 1);
-            TrailColor = new Vector3(2, 0, 0);
-            Scale = 2;
+            ModelScale = new Vector3(1);
+            Radius = 1;
 
             base.Initialize();
-            LoadContent();
-            BeginRun();
         }
 
         public override void LoadContent()
         {
-            LoadModel("Cube");
-            TrailModel = Load("Cube");
+            LoadModel("MC_WarHead");
+            Trail.LoadModel("MC_WarHeadTrail");
         }
 
         public override void BeginRun()
         {
+            Trail.Moveable = false;
+            Trail.DefuseColor = new Vector3(1, 0, 0);
+            Trail.ModelScale = new Vector3(1.5f);
 
             base.BeginRun();
         }
 
         public override void Update(GameTime gameTime)
         {
+            if (Active)
+            {
+                Trail.ModelScale = new Vector3(Vector3.Distance(Trail.Position, Position), 1.5f, 1);
+            }
 
             base.Update(gameTime);
         }
@@ -56,34 +64,14 @@ namespace MissileCommand.Entities
         {
             Position = position;
             Active = true;
-
-
+            Trail.Active = true;
+            Trail.Position = position;
+            Trail.Position.Z = -2;
+            Target = new Vector3(Services.RandomMinMax(-480, 450), -450, 0);
+            Trail.Rotation = new Vector3(0, 0, AngleFromVectors(position, Target));
+            Rotation = Trail.Rotation;
+            Velocity = SetVelocity(AngleFromVectors(position, Target), 10);
         }
 
-        void MakeNewTrailCube()
-        {
-            bool spawnNew = true;
-            int freeOne = Trail.Count;
-
-            for (int i = 0; i < Trail.Count; i++)
-            {
-                if (!Trail[i].Active)
-                {
-                    spawnNew = false;
-                    freeOne = i;
-                    break;
-                }
-
-                if (spawnNew)
-                {
-                    Trail.Add(new Mod(Game));
-                    Trail.Last().SetModel(TrailModel);
-                    Trail.Last().Moveable = false;
-                }
-
-                Trail[freeOne].Active = true;
-                Trail[freeOne].Position = Position;
-            }
-        }
     }
 }
