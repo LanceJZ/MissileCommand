@@ -21,10 +21,8 @@ namespace MissileCommand.Entities
 
     public class Player : Mod
     {
-        List<Missile> Missiles;
-        List<Mod> Xmarks;
-        XnaModel XmarkModel;
-
+        List<TargetedMissile> TheMissiles;
+        public List<Explosion> TheExplosions;
         MouseState LastMouseState;
         KeyboardState LastKeyState;
 
@@ -33,11 +31,12 @@ namespace MissileCommand.Entities
         public Player(Game game, float gameScale) : base(game)
         {
             GameScale = gameScale;
-            Xmarks = new List<Mod>();
-            Missiles = new List<Missile>();
+            TheMissiles = new List<TargetedMissile>();
+            TheExplosions = new List<Explosion>();
 
             LoadContent();
             BeginRun();
+            // Screen resolution is 1200 X 900. Y positive on top of window. So up is positive.
         }
 
         public override void Initialize()
@@ -50,7 +49,6 @@ namespace MissileCommand.Entities
         public override void LoadContent()
         {
             LoadModel("MC_CrossHair");
-            XmarkModel = Load("MC_Xmark");
         }
 
         public override void BeginRun()
@@ -62,34 +60,30 @@ namespace MissileCommand.Entities
         public override void Update(GameTime gameTime)
         {
             GetInput();
-            //MissileCollusion();
+            MissileCollusion();
 
             base.Update(gameTime);
         }
 
         void MissileCollusion()
         {
-            foreach (Missile missile in Missiles)
+            foreach (TargetedMissile tMissile in TheMissiles)
             {
-                if (missile.Active)
+                if (tMissile.Active)
                 {
-                    foreach (Mod xmark in Xmarks)
+                    if (tMissile.SphereIntersect2D(tMissile.TheMissile))
                     {
-                        if (xmark.Active)
-                        {
-                            if (missile.SphereIntersect2D(xmark))
-                            {
-                                missile.Deactivate();
-                                xmark.Active = false;
-                                break;
-                            }
-                        }
+                        tMissile.Deactivate();
+                        SetExplode(tMissile.Position);
+                        break;
                     }
                 }
             }
         }
 
-        // Screen resolution is 1200 X 900. Y positive on top of window. So up is positive.
+        // Screen resolution is 1200 X 900.
+        // Y positive on top of window. So down is negative.
+        // X positive is left of window. So to the right is negative.
         void GetInput()
         {
             MouseState theMouse = Mouse.GetState();
@@ -97,7 +91,6 @@ namespace MissileCommand.Entities
 
             if (theKeyboard.IsKeyDown(Keys.Up))
                 MoveUp();
-
             else if (theKeyboard.IsKeyDown(Keys.Down))
                 MoveDown();
             else if (theKeyboard.IsKeyDown(Keys.Left))
@@ -107,10 +100,22 @@ namespace MissileCommand.Entities
             else
                 StopMove();
 
-            if (!LastKeyState.IsKeyDown(Keys.LeftControl))
+            if (!LastKeyState.IsKeyDown(Keys.Z))
             {
-                if (theKeyboard.IsKeyDown(Keys.LeftControl))
+                if (theKeyboard.IsKeyDown(Keys.Z))
+                    FireMissile(new Vector3(-550, -400, 0));
+            }
+
+            if (!LastKeyState.IsKeyDown(Keys.X))
+            {
+                if (theKeyboard.IsKeyDown(Keys.X))
                     FireMissile(new Vector3(0, -400, 0));
+            }
+
+            if (!LastKeyState.IsKeyDown(Keys.C))
+            {
+                if (theKeyboard.IsKeyDown(Keys.C))
+                    FireMissile(new Vector3(550, -400, 0));
             }
 
             LastMouseState = theMouse;
@@ -119,51 +124,48 @@ namespace MissileCommand.Entities
 
         void FireMissile(Vector3 basePos)
         {
-            bool spawnNewMark = true;
-            int freeMark = Xmarks.Count;
+            bool spawnNew = true;
+            int freeOne = TheMissiles.Count;
 
-            for (int i = 0; i < Xmarks.Count; i++)
+            for (int i = 0; i < TheMissiles.Count; i ++)
             {
-                if (!Xmarks[i].Active)
+                if (!TheMissiles[i].Active)
                 {
-                    spawnNewMark = false;
-                    freeMark = i;
+                    spawnNew = false;
+                    freeOne = i;
                     break;
                 }
             }
 
-            if (spawnNewMark)
+            if (spawnNew)
             {
-                Xmarks.Add(new Mod(Game));
-                Xmarks.Last().SetModel(XmarkModel);
-                Xmarks.Last().Moveable = false;
+                TheMissiles.Add(new TargetedMissile(Game, GameScale));
             }
 
-            Xmarks[freeMark].Position = Position;
-            Xmarks[freeMark].DefuseColor = new Vector3(0, 0.1f, 2);
-            Xmarks[freeMark].Active = true;
+            TheMissiles[freeOne].Spawn(basePos, Position);
+        }
 
-            bool spawnNewMissile = true;
-            int freeMissile = Missiles.Count;
+        void SetExplode(Vector3 position)
+        {
+            bool spawnNew = true;
+            int freeOne = TheExplosions.Count;
 
-            for (int i = 0; i < Missiles.Count; i ++)
+            for (int i = 0; i < TheExplosions.Count; i++)
             {
-                if (!Missiles[i].Active)
+                if (!TheExplosions[i].Active)
                 {
-                    spawnNewMissile = false;
-                    freeMissile = i;
+                    spawnNew = false;
+                    freeOne = i;
                     break;
                 }
             }
 
-            if (spawnNewMissile)
+            if (spawnNew)
             {
-                Missiles.Add(new Missile(Game, GameScale));
+                TheExplosions.Add(new Explosion(Game, GameScale));
             }
 
-            Missiles[freeMissile].Spawn(basePos, Xmarks[freeMark], 300);
-            Missiles[freeMissile].TrailColor = new Vector3(0.1f, 0, 2);
-            Missiles[freeMissile].TimerAmount = 0.06f;
+            TheExplosions[freeOne].Spawn(position);
         }
 
         void MoveUp()
@@ -171,6 +173,7 @@ namespace MissileCommand.Entities
             if (Position.Y < Services.WindowHeight * 0.5f)
             {
                 Velocity.Y = MoveSpeed;
+                Velocity.X = 0;
             }
         }
 
@@ -179,6 +182,7 @@ namespace MissileCommand.Entities
             if (Position.Y > -Services.WindowHeight * 0.5f)
             {
                 Velocity.Y = -MoveSpeed;
+                Velocity.X = 0;
             }
         }
 
@@ -187,6 +191,7 @@ namespace MissileCommand.Entities
             if (Position.X < Services.WindowWidth * 0.5f)
             {
                 Velocity.X = MoveSpeed;
+                Velocity.Y = 0;
             }
         }
 
@@ -195,6 +200,7 @@ namespace MissileCommand.Entities
             if (Position.X > -Services.WindowWidth * 0.5f)
             {
                 Velocity.X = -MoveSpeed;
+                Velocity.Y = 0;
             }
         }
 

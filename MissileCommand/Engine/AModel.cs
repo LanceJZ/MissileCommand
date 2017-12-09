@@ -17,14 +17,17 @@ namespace Engine
         Texture2D XNATexture;
         Matrix[] ModelTransforms;
         Matrix BaseWorld;
-        Vector3 m_ModelScale = new Vector3(1);
+        public Vector3 ModelScale = new Vector3(1);
+        public Vector3 ModelScaleVelocity = Vector3.Zero;
+        public Vector3 ModelScaleAcceleration = Vector3.Zero;
+        bool m_AnimatedScale = true;
         bool m_Visable = true;
 
         public XnaModel XNAModel { get; private set; }
         public bool Visable { get => m_Visable; set => m_Visable = value; }
         public BoundingSphere Sphere { get => XNAModel.Meshes[0].BoundingSphere; }
         public float SphereRadius { get => XNAModel.Meshes[0].BoundingSphere.Radius; }
-        public Vector3 ModelScale { get => m_ModelScale; set => m_ModelScale = value; }
+        public bool AnimatedScale { get => m_AnimatedScale; set => m_AnimatedScale = value; }
 
         public AModel (Game game) : base(game)
         {
@@ -64,6 +67,7 @@ namespace Engine
         public override void Update(GameTime gameTime)
         {
             base.Update(gameTime);
+
             if (Active)
             {
                 /* A rule of thumb is ISROT - Identity, Scale, Rotate, Orbit, Translate.
@@ -82,7 +86,7 @@ namespace Engine
                 // translation, rotation, and scaling
                 BaseWorld = Matrix.Identity;
 
-                BaseWorld = Matrix.CreateScale(m_ModelScale)
+                BaseWorld = Matrix.CreateScale(ModelScale)
                     * Matrix.CreateFromYawPitchRoll(Rotation.Y, Rotation.X, Rotation.Z)
                     * Matrix.CreateTranslation(Position);
 
@@ -92,6 +96,14 @@ namespace Engine
                         ParentPO.Rotation.X + ParentPO.ParentRotation.X,
                         ParentPO.Rotation.Z + ParentPO.ParentRotation.Z)
                         * Matrix.CreateTranslation(ParentPO.Position + ParentPO.ParentPosition);
+                }
+
+                if (m_AnimatedScale)
+                {
+                    float eGT = (float)gameTime.ElapsedGameTime.TotalSeconds;
+
+                    ModelScaleVelocity += ModelScaleAcceleration * eGT;
+                    ModelScale += ModelScaleVelocity * eGT;
                 }
             }
         }

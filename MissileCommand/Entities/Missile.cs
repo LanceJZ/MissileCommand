@@ -57,6 +57,7 @@ namespace MissileCommand.Entities
         {
             Trail.Moveable = false;
             Trail.ModelScale = new Vector3(1.5f);
+            Radius = SphereRadius;
 
             base.BeginRun();
         }
@@ -65,14 +66,14 @@ namespace MissileCommand.Entities
         {
             if (Active)
             {
-                if (TrailTimer.Expired && TrailTimer.Enabled)
+                if (TrailTimer.Expired)
                 {
                     TrailTimer.Reset();
                     Trail.ModelScale = new Vector3(Vector3.Distance(Trail.Position, Position), 1.5f, 1);
                 }
 
-                if (Colusions())
-                    Deactivate();
+                //if (Colusions())
+                //    Hit = true;
             }
 
             base.Update(gameTime);
@@ -95,7 +96,7 @@ namespace MissileCommand.Entities
             Position = position;
             Target = target;
             Active = true;
-            TrailTimer.Enabled = true;
+            Hit = false;
             Trail.Active = true;
             Trail.ModelScale = new Vector3(1);
             Trail.Position = position;
@@ -108,7 +109,6 @@ namespace MissileCommand.Entities
         public void Deactivate()
         {
             Active = false;
-            TrailTimer.Enabled = false;
             Trail.Active = false;
         }
 

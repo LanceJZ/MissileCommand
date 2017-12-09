@@ -28,7 +28,7 @@ namespace MissileCommand
             Missiles = new EnemyMissileController(game, GameScale, TheBackground, ThePlayer);
             FPSTimer = new Timer(game, 1);
 
-            // Screen resolution is 1200 X 900.
+            // Screen resolution is 1200 X 900. Y positive on top of window. So up is positive.
             game.Components.Add(this);
         }
 

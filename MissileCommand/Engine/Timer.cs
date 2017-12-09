@@ -49,7 +49,8 @@ namespace Engine
         {
             base.Update(gameTime);
 
-            m_Seconds += (float)gameTime.ElapsedGameTime.TotalSeconds;
+            if (!Expired)
+                m_Seconds += (float)gameTime.ElapsedGameTime.TotalSeconds;
         }
 
         public void Reset()
