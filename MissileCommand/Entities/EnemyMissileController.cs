@@ -18,7 +18,7 @@ namespace MissileCommand.Entities
 
         Timer FireTimer;
         float GameScale;
-        int MaxNumberOfMissiles = 100;
+        int MaxNumberOfMissiles = 20;
         int Group = 4;
 
         public EnemyMissileController(Game game, float gameScale, Background background, Player player) : base(game)
@@ -27,7 +27,7 @@ namespace MissileCommand.Entities
             Missiles = new List<Missile>();
             BackgroundRef = background;
             PlayerRef = player;
-            FireTimer = new Timer(game, 0.666f);
+            FireTimer = new Timer(game, 1.2666f);
 
 
             game.Components.Add(this);
@@ -56,6 +56,7 @@ namespace MissileCommand.Entities
             if (FireTimer.Expired)
             {
                 FireTimer.Reset();
+
                 if (Missiles.Count < MaxNumberOfMissiles)
                 {
                     FireMissile(Services.RandomMinMax(-400, 400));

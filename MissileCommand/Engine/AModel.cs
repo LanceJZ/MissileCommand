@@ -64,33 +64,35 @@ namespace Engine
         public override void Update(GameTime gameTime)
         {
             base.Update(gameTime);
-
-            /* A rule of thumb is ISROT - Identity, Scale, Rotate, Orbit, Translate.
-               This is the order to multiple your matrices in.
-               So for the moon and earth example, to place the moon:
-                Identity - this is just Matrix.Identity (an all 1's matrix).
-                Scale - Scale the moon to it's proper size.
-                Rotate - rotate the moon around it's own center
-                Orbit - this is a two step Translate then Rotate process,
-                        first Translate (move) the moon to it's position relative to the
-                        earth (i.e. if the earth was at 0, 0, 0).  The rotate the moon around
-                        this point to position it in orbit.
-                Translate - move the moon to the final location, which will be the same
-                        as the location of earth in this case since it's already setup to be in orbit.*/
-            // Calculate the base transformation by combining
-            // translation, rotation, and scaling
-            BaseWorld = Matrix.Identity;
-
-            BaseWorld = Matrix.CreateScale(m_ModelScale)
-                * Matrix.CreateFromYawPitchRoll(Rotation.Y, Rotation.X, Rotation.Z)
-                * Matrix.CreateTranslation(Position);
-
-            if (Child)
+            if (Active)
             {
+                /* A rule of thumb is ISROT - Identity, Scale, Rotate, Orbit, Translate.
+                   This is the order to multiple your matrices in.
+                   So for the moon and earth example, to place the moon:
+                    Identity - this is just Matrix.Identity (an all 1's matrix).
+                    Scale - Scale the moon to it's proper size.
+                    Rotate - rotate the moon around it's own center
+                    Orbit - this is a two step Translate then Rotate process,
+                            first Translate (move) the moon to it's position relative to the
+                            earth (i.e. if the earth was at 0, 0, 0).  The rotate the moon around
+                            this point to position it in orbit.
+                    Translate - move the moon to the final location, which will be the same
+                            as the location of earth in this case since it's already setup to be in orbit.*/
+                // Calculate the base transformation by combining
+                // translation, rotation, and scaling
+                BaseWorld = Matrix.Identity;
+
+                BaseWorld = Matrix.CreateScale(m_ModelScale)
+                    * Matrix.CreateFromYawPitchRoll(Rotation.Y, Rotation.X, Rotation.Z)
+                    * Matrix.CreateTranslation(Position);
+
+                if (Child)
+                {
                     BaseWorld *= Matrix.CreateFromYawPitchRoll(ParentPO.Rotation.Y + ParentPO.ParentRotation.Y,
                         ParentPO.Rotation.X + ParentPO.ParentRotation.X,
                         ParentPO.Rotation.Z + ParentPO.ParentRotation.Z)
                         * Matrix.CreateTranslation(ParentPO.Position + ParentPO.ParentPosition);
+                }
             }
         }
 
@@ -109,12 +111,16 @@ namespace Engine
 
                         //effect.Texture = XNATexture ?? effect.Texture; //Replace texture if XNATexture is not null.
                         effect.EnableDefaultLighting();
+
                         if (DefuseColor != Vector3.Zero)
                             effect.DiffuseColor = DefuseColor;
-                        effect.PreferPerPixelLighting = true;
+
+                        //effect.PreferPerPixelLighting = true;
                         effect.World = BaseWorld;
-                        if (XNATexture != null)
-                            effect.Texture = XNATexture;// ?? effect.Texture; //Replace texture if XNATexture is not null.
+
+                        //if (XNATexture != null)
+                            //effect.Texture = XNATexture;// ?? effect.Texture; //Replace texture if XNATexture is not null.
+
                         Services.Camera.Draw(effect);
                     }
 

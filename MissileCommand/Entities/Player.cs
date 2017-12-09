@@ -62,8 +62,31 @@ namespace MissileCommand.Entities
         public override void Update(GameTime gameTime)
         {
             GetInput();
+            //MissileCollusion();
 
             base.Update(gameTime);
+        }
+
+        void MissileCollusion()
+        {
+            foreach (Missile missile in Missiles)
+            {
+                if (missile.Active)
+                {
+                    foreach (Mod xmark in Xmarks)
+                    {
+                        if (xmark.Active)
+                        {
+                            if (missile.SphereIntersect2D(xmark))
+                            {
+                                missile.Deactivate();
+                                xmark.Active = false;
+                                break;
+                            }
+                        }
+                    }
+                }
+            }
         }
 
         // Screen resolution is 1200 X 900. Y positive on top of window. So up is positive.
@@ -87,23 +110,60 @@ namespace MissileCommand.Entities
             if (!LastKeyState.IsKeyDown(Keys.LeftControl))
             {
                 if (theKeyboard.IsKeyDown(Keys.LeftControl))
-                    FireMissile();
+                    FireMissile(new Vector3(0, -400, 0));
             }
 
             LastMouseState = theMouse;
             LastKeyState = theKeyboard;
         }
 
-        void FireMissile()
+        void FireMissile(Vector3 basePos)
         {
-            Xmarks.Add(new Mod(Game));
-            Xmarks.Last().SetModel(XmarkModel);
-            Xmarks.Last().Position = Position;
-            Xmarks.Last().DefuseColor = new Vector3(0, 0.1f, 2);
+            bool spawnNewMark = true;
+            int freeMark = Xmarks.Count;
 
-            Missiles.Add(new Missile(Game, GameScale));
-            Missiles.Last().Spawn(new Vector3(0, -400, 0), Position, 300);
-            Missiles.Last().TrailColor = new Vector3(0.1f, 0, 2);
+            for (int i = 0; i < Xmarks.Count; i++)
+            {
+                if (!Xmarks[i].Active)
+                {
+                    spawnNewMark = false;
+                    freeMark = i;
+                    break;
+                }
+            }
+
+            if (spawnNewMark)
+            {
+                Xmarks.Add(new Mod(Game));
+                Xmarks.Last().SetModel(XmarkModel);
+                Xmarks.Last().Moveable = false;
+            }
+
+            Xmarks[freeMark].Position = Position;
+            Xmarks[freeMark].DefuseColor = new Vector3(0, 0.1f, 2);
+            Xmarks[freeMark].Active = true;
+
+            bool spawnNewMissile = true;
+            int freeMissile = Missiles.Count;
+
+            for (int i = 0; i < Missiles.Count; i ++)
+            {
+                if (!Missiles[i].Active)
+                {
+                    spawnNewMissile = false;
+                    freeMissile = i;
+                    break;
+                }
+            }
+
+            if (spawnNewMissile)
+            {
+                Missiles.Add(new Missile(Game, GameScale));
+            }
+
+            Missiles[freeMissile].Spawn(basePos, Xmarks[freeMark], 300);
+            Missiles[freeMissile].TrailColor = new Vector3(0.1f, 0, 2);
+            Missiles[freeMissile].TimerAmount = 0.06f;
         }
 
         void MoveUp()
