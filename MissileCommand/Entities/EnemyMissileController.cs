@@ -10,6 +10,12 @@ using Engine;
 
 namespace MissileCommand.Entities
 {
+    public struct MissileTarget
+    {
+        public float Min;
+        public float Max;
+    }
+
     public class EnemyMissileController : GameComponent, IBeginable, IUpdateableComponent, ILoadContent
     {
         List<Missile> TheMissiles;
@@ -18,6 +24,11 @@ namespace MissileCommand.Entities
         Player PlayerRef;
 
         Timer FireTimer;
+
+        MissileTarget[] TargetCities = new MissileTarget[6];
+        MissileTarget[] TargetBases = new MissileTarget[3];
+        MissileTarget[] TargetLand = new MissileTarget[5];
+
         float GameScale;
         int MaxNumberOfMissiles = 50;
         int LaunchedMissiles = 0;
@@ -32,12 +43,40 @@ namespace MissileCommand.Entities
             PlayerRef = player;
             FireTimer = new Timer(game, 1.2666f);
 
-            // Screen resolution is 1200 X 900. Y positive on top of window. So up is positive.
+            // Screen resolution is 1200 X 900. Top Right Corner positive.
+            // Y positive on top of window.
+            // X Positive is on the right of the window.
             game.Components.Add(this);
         }
 
         public override void Initialize()
         {
+            foreach (City city in BackgroundRef.Cities)
+            {
+                int i = 0;
+                TargetCities[i].Min = city.Position.X - 20;
+                TargetCities[i].Max = city.Position.X + 20;
+                i++;
+            }
+
+            for (int i = 0; i < 3; i++)
+            {
+                float startX = (i * 550) - 550;
+                TargetBases[i].Min = startX - 10;
+                TargetBases[i].Max = startX + 10;
+            }
+
+            TargetLand[0].Min = BackgroundRef.Cities[0].Position.X - 30;
+            TargetLand[0].Max = BackgroundRef.Cities[1].Position.X + 30;
+            TargetLand[1].Min = BackgroundRef.Cities[1].Position.X - 30;
+            TargetLand[1].Max = BackgroundRef.Cities[2].Position.X + 30;
+            TargetLand[2].Min = BackgroundRef.Cities[3].Position.X + 30;
+            TargetLand[2].Max = BackgroundRef.Cities[4].Position.X - 30;
+            TargetLand[3].Min = BackgroundRef.Cities[4].Position.X + 30;
+            TargetLand[3].Max = BackgroundRef.Cities[5].Position.X - 30;
+            TargetLand[4].Min = BackgroundRef.Cities[5].Position.X + 30;
+            TargetLand[4].Max = 550 - 30;
+
 
             base.Initialize();
             Services.AddLoadable(this);
@@ -174,6 +213,18 @@ namespace MissileCommand.Entities
                                 missile.Deactivate();
                                 city.Deactivate();
                                 break;
+                            }
+                        }
+                    }
+
+                    foreach(MissileBase missileBase in BackgroundRef.Bases)
+                    {
+                        if (missileBase.Active)
+                        {
+                            if (missile.CirclesIntersect(missileBase))
+                            {
+                                missile.Deactivate();
+                                missileBase.Deativate();
                             }
                         }
                     }

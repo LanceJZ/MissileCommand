@@ -9,17 +9,17 @@ using Engine;
 
 namespace MissileCommand.Entities
 {
-    using Mod = Engine.AModel;
-
     public class Background : GameComponent, IBeginable, IUpdateableComponent, ILoadContent
     {
-        Mod[,] Missiles = new Mod[10, 3];
-        Mod[] Ground = new Mod[5];
+        AModel[] Ground = new AModel[5];
         City[] TheCities = new City[6];
+
+        MissileBase[] BaseLocations = new MissileBase[3];
 
         float GameScale;
 
         public City[] Cities { get => TheCities; }
+        public MissileBase[] Bases { get => BaseLocations; }
 
         public Background(Game game, float gameScale) : base(game)
         {
@@ -27,15 +27,12 @@ namespace MissileCommand.Entities
 
             for (int ii = 0; ii < 3; ii++)
             {
-                for (int i = 0; i < 10; i++)
-                {
-                    Missiles[i, ii] = new Mod(game);
-                }
+                BaseLocations[ii] = new MissileBase(game, gameScale);
             }
 
             for (int i = 0; i < Ground.Length; i++)
             {
-                Ground[i] = new Mod(game);
+                Ground[i] = new AModel(game);
             }
 
 
@@ -52,7 +49,7 @@ namespace MissileCommand.Entities
         {
             float posX = -(253 * GameScale);
 
-            foreach (Mod plot in Ground)
+            foreach (AModel plot in Ground)
             {
                 plot.ModelScale = new Vector3(GameScale);
                 plot.Position.Z = -10;
@@ -70,11 +67,6 @@ namespace MissileCommand.Entities
                 city.DefuseColor = new Vector3(0.2f, 0.1f, 2.5f); // Reddish Blue
             }
 
-            foreach (Mod missile in Missiles)
-            {
-                missile.DefuseColor = new Vector3(0.2f, 0.1f, 2.5f); // Reddish Blue
-            }
-
             TheCities[0].Position.X = -240 * GameScale;
             TheCities[1].Position.X = -129 * GameScale;
             TheCities[2].Position.X = -53 * GameScale;
@@ -84,21 +76,9 @@ namespace MissileCommand.Entities
 
             for (int i = 0; i < 3; i++)
             {
-                int spot = 0;
-
                 int bank = (i * 550) - 550;
-
-                for (int line = 0; line < 4; line++)
-                {
-                    for (int row = 0; row < line + 1; row++)
-                    {
-                        float spaceX = 20;
-                        Missiles[spot, i].Position.X = ((-spaceX * line) + (row * spaceX) + (line * (spaceX / 2))) + bank;
-                        Missiles[spot, i].Position.Y = (-8 * line) -400;
-
-                        spot++;
-                    }
-                }
+                BaseLocations[i].Spawn(new Vector3(0.2f, 0.1f, 2.5f));
+                BaseLocations[i].Setup(new Vector3(bank, -400, 0));
             }
 
             base.Initialize();
@@ -116,11 +96,6 @@ namespace MissileCommand.Entities
             for (int i = 0; i < 5; i++)
             {
                 Ground[i].LoadModel("MC_Ground-" + i.ToString());
-            }
-
-            foreach(Mod missile in Missiles)
-            {
-                missile.LoadModel("MC_MissileAmmo");
             }
         }
 

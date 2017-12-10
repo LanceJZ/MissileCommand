@@ -52,6 +52,7 @@ namespace MissileCommand.Entities
         {
             Active = false;
             Explode.Spawn(Position);
+            Explode.MaxSize = 3;
         }
     }
 }
