@@ -13,11 +13,13 @@ namespace MissileCommand.Entities
 
     public class City : Mod
     {
+        Explosion Explode;
 
-
-        public City(Game game) : base(game)
+        public City(Game game, float gameScale) : base(game)
         {
-
+            GameScale = gameScale;
+            Explode = new Explosion(game, gameScale);
+            Explode.Active = false;
         }
 
         public override void Initialize()
@@ -44,6 +46,12 @@ namespace MissileCommand.Entities
         {
 
             base.Update(gameTime);
+        }
+
+        public void Deactivate()
+        {
+            Active = false;
+            Explode.Spawn(Position);
         }
     }
 }

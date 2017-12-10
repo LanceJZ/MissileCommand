@@ -139,7 +139,7 @@ namespace MissileCommand.Entities
                         break;
                     }
 
-                    foreach (Explosion explode in PlayerRef.TheExplosions)
+                    foreach (Explosion explode in PlayerRef.Explosions)
                     {
                         if (explode.Active)
                         {
@@ -160,6 +160,19 @@ namespace MissileCommand.Entities
                             {
                                 SetExplode(missile.Position);
                                 missile.Deactivate();
+                                break;
+                            }
+                        }
+                    }
+
+                    foreach (City city in BackgroundRef.Cities)
+                    {
+                        if (city.Active)
+                        {
+                            if (missile.SphereIntersect2D(city))
+                            {
+                                missile.Deactivate();
+                                city.Deactivate();
                                 break;
                             }
                         }

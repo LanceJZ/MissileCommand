@@ -15,14 +15,11 @@ namespace MissileCommand.Entities
     {
         Mod[,] Missiles = new Mod[10, 3];
         Mod[] Ground = new Mod[5];
-        City[] Cities = new City[6];
+        City[] TheCities = new City[6];
 
         float GameScale;
 
-        public City[] TheCities
-        {
-            get => Cities;
-        }
+        public City[] Cities { get => TheCities; }
 
         public Background(Game game, float gameScale) : base(game)
         {
@@ -42,9 +39,9 @@ namespace MissileCommand.Entities
             }
 
 
-            for (int i = 0; i < Cities.Length; i++)
+            for (int i = 0; i < TheCities.Length; i++)
             {
-                Cities[i] = new City(game);
+                Cities[i] = new City(game, GameScale);
             }
 
             // Screen resolution is 1200 X 900. Y positive on top of window. So up is positive.
@@ -66,7 +63,7 @@ namespace MissileCommand.Entities
                 posX += (126 * GameScale);
             }
 
-            foreach (City city in Cities)
+            foreach (City city in TheCities)
             {
                 city.ModelScale = new Vector3(GameScale);
                 city.Position.Y = Ground[0].Position.Y + (12 * GameScale) + (14.5f * GameScale);
@@ -78,12 +75,12 @@ namespace MissileCommand.Entities
                 missile.DefuseColor = new Vector3(0.2f, 0.1f, 2.5f); // Reddish Blue
             }
 
-            Cities[0].Position.X = -240 * GameScale;
-            Cities[1].Position.X = -129 * GameScale;
-            Cities[2].Position.X = -53 * GameScale;
-            Cities[3].Position.X = 53 * GameScale;
-            Cities[4].Position.X = 134 * GameScale;
-            Cities[5].Position.X = 216 * GameScale;
+            TheCities[0].Position.X = -240 * GameScale;
+            TheCities[1].Position.X = -129 * GameScale;
+            TheCities[2].Position.X = -53 * GameScale;
+            TheCities[3].Position.X = 53 * GameScale;
+            TheCities[4].Position.X = 134 * GameScale;
+            TheCities[5].Position.X = 216 * GameScale;
 
             for (int i = 0; i < 3; i++)
             {
@@ -131,6 +128,14 @@ namespace MissileCommand.Entities
         {
 
             base.Update(gameTime);
+        }
+
+        public void IsCityHit()
+        {
+            foreach(City city in TheCities)
+            {
+
+            }
         }
     }
 }

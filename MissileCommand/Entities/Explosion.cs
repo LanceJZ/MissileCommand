@@ -16,8 +16,11 @@ namespace MissileCommand.Entities
     {
         Timer BlinkTimer;
         float Speed = 0.5f;
+        float TheMaxSize = 1.5f;
         bool Growing = true;
         bool Blinked = true;
+
+        public float MaxSize { set => TheMaxSize = value; }
 
         public Explosion(Game game, float gameScale) : base(game)
         {
@@ -72,7 +75,7 @@ namespace MissileCommand.Entities
                 {
                     ModelScaleVelocity = new Vector3(Speed * 2, Speed * 2, 0);
 
-                    if (ModelScale.X > 1.5f)
+                    if (ModelScale.X > TheMaxSize)
                     {
                         Growing = false;
                     }

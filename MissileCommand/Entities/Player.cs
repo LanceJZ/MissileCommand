@@ -22,11 +22,13 @@ namespace MissileCommand.Entities
     public class Player : Mod
     {
         List<TargetedMissile> TheMissiles;
-        public List<Explosion> TheExplosions;
+        List<Explosion> TheExplosions;
         MouseState LastMouseState;
         KeyboardState LastKeyState;
 
         float MoveSpeed = 100;
+
+        public List<Explosion> Explosions { get => TheExplosions; }
 
         public Player(Game game, float gameScale) : base(game)
         {
