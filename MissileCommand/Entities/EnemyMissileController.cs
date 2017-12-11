@@ -29,6 +29,8 @@ namespace MissileCommand.Entities
         MissileTarget[] TargetBases = new MissileTarget[3];
         MissileTarget[] TargetLand = new MissileTarget[5];
 
+        int[] TargetedCities = new int[3];
+
         float GameScale;
         int MaxNumberOfMissiles = 50;
         int LaunchedMissiles = 0;
@@ -61,22 +63,21 @@ namespace MissileCommand.Entities
 
             for (int i = 0; i < 3; i++)
             {
-                float startX = (i * 550) - 550;
+                float startX = BackgroundRef.Bases[i].Position.X;
                 TargetBases[i].Min = startX - 10;
                 TargetBases[i].Max = startX + 10;
             }
 
-            TargetLand[0].Min = BackgroundRef.Cities[0].Position.X - 30;
-            TargetLand[0].Max = BackgroundRef.Cities[1].Position.X + 30;
-            TargetLand[1].Min = BackgroundRef.Cities[1].Position.X - 30;
-            TargetLand[1].Max = BackgroundRef.Cities[2].Position.X + 30;
-            TargetLand[2].Min = BackgroundRef.Cities[3].Position.X + 30;
-            TargetLand[2].Max = BackgroundRef.Cities[4].Position.X - 30;
-            TargetLand[3].Min = BackgroundRef.Cities[4].Position.X + 30;
-            TargetLand[3].Max = BackgroundRef.Cities[5].Position.X - 30;
-            TargetLand[4].Min = BackgroundRef.Cities[5].Position.X + 30;
-            TargetLand[4].Max = 550 - 30;
-
+            TargetLand[0].Min = BackgroundRef.Cities[0].Position.X + 60;
+            TargetLand[0].Max = BackgroundRef.Cities[1].Position.X - 60;
+            TargetLand[1].Min = BackgroundRef.Cities[1].Position.X + 60;
+            TargetLand[1].Max = BackgroundRef.Cities[2].Position.X - 60;
+            TargetLand[2].Min = BackgroundRef.Cities[3].Position.X + 60;
+            TargetLand[2].Max = BackgroundRef.Cities[4].Position.X - 60;
+            TargetLand[3].Min = BackgroundRef.Cities[4].Position.X + 60;
+            TargetLand[3].Max = BackgroundRef.Cities[5].Position.X - 60;
+            TargetLand[4].Min = BackgroundRef.Cities[5].Position.X + 60;
+            TargetLand[4].Max = 550 - 60;
 
             base.Initialize();
             Services.AddLoadable(this);
@@ -90,6 +91,7 @@ namespace MissileCommand.Entities
 
         public void BeginRun()
         {
+            TargetedCities = ChoseCities();
 
         }
 
@@ -98,12 +100,7 @@ namespace MissileCommand.Entities
             if (FireTimer.Expired)
             {
                 FireTimer.Reset();
-
-                if (LaunchedMissiles < MaxNumberOfMissiles)
-                {
-                    FireMissile(Services.RandomMinMax(-400, 400));
-                    LaunchedMissiles++;
-                }
+                LounchMissile();
             }
 
             if (Collusions())
@@ -114,7 +111,79 @@ namespace MissileCommand.Entities
             base.Update(gameTime);
         }
 
-        void FireMissile(float spawnX)
+        int[] ChoseCities()
+        {
+            int[] targetedCities = new int[3];
+
+            for (int i = 0; i < 3; i++)
+            {
+                targetedCities[i] = 6;
+            }
+
+            for (int city = 0; city < 3; city++)
+            {
+                bool nextCity = false;
+                int cityTarget = 0;
+
+                while (!nextCity)
+                {
+                    nextCity = true;
+                    cityTarget = Services.RandomMinMax(0, 5);
+
+                    for (int i = 0; i < 3; i++)
+                    {
+                        if (i != city)
+                        {
+                            if (cityTarget == targetedCities[i])
+                            {
+                                nextCity = false;
+                                break;
+                            }
+                        }
+                    }
+                }
+
+                targetedCities[city] = cityTarget;
+            }
+
+            return targetedCities;
+        }
+
+        float ChoseTarget()
+        {
+            if (Services.RandomMinMax(0.0f, 100.0f) > 50)
+            {
+                return BackgroundRef.Cities[TargetedCities[Services.RandomMinMax(0, 2)]].Position.X;
+            }
+
+            if (Services.RandomMinMax(0.0f, 100.0f) > 50)
+            {
+                int silo = Services.RandomMinMax(0, 2);
+                return Services.RandomMinMax(TargetBases[silo].Min,
+                    TargetBases[silo].Max);
+            }
+
+            int land = Services.RandomMinMax(0, 4);
+            return Services.RandomMinMax(TargetLand[land].Min,
+                TargetLand[land].Max);
+        }
+
+        void LounchMissile()
+        {
+            if (LaunchedMissiles < MaxNumberOfMissiles)
+            {
+                Vector3 target = new Vector3(ChoseTarget(), -400, 0);
+
+                FireMissile(target);
+                LaunchedMissiles++;
+            }
+            else
+            {
+                TargetedCities = ChoseCities();
+            }
+        }
+
+        void FireMissile(Vector3 position)
         {
             bool spawnNew = true;
             int freeOne = TheMissiles.Count;
@@ -134,7 +203,7 @@ namespace MissileCommand.Entities
                 TheMissiles.Add(new Missile(Game, GameScale));
             }
 
-            TheMissiles[freeOne].Spawn(new Vector3(spawnX, 450, 0));
+            TheMissiles[freeOne].Spawn(position);
             TheMissiles[freeOne].DefuseColor = new Vector3(0.1f, 1, 1);
             TheMissiles[freeOne].TrailColor = new Vector3(1, 0, 0);
         }
@@ -172,7 +241,7 @@ namespace MissileCommand.Entities
                 {
                     noMissile = false;
 
-                    if (missile.Position.Y < -415)
+                    if (missile.Position.Y < -400)
                     {
                         missile.Deactivate();
                         break;

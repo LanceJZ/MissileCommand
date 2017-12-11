@@ -37,6 +37,9 @@ namespace MissileCommand.Entities
 
             LoadContent();
             BeginRun();
+            // Screen resolution is 1200 X 900. Top Right Corner positive.
+            // Y positive on top of window.
+            // X Positive is on the right of the window.
         }
 
         public override void Initialize()
@@ -79,9 +82,9 @@ namespace MissileCommand.Entities
             base.Update(gameTime);
         }
 
-        public void Spawn(Vector3 position)
+        public void Spawn(Vector3 target)
         {
-            Spawn(position, new Vector3(Services.RandomMinMax(-480, 450), -450, 0), 10);
+            Spawn(new Vector3(Services.RandomMinMax(-300, 300), 450, 0), target, 10);
         }
 
         public void Spawn(Vector3 position, Mod target, float speed)

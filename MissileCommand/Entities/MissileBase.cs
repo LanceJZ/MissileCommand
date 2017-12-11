@@ -11,6 +11,7 @@ namespace MissileCommand.Entities
 {
     public class MissileBase : PositionedObject
     {
+        Explosion Explode;
         AModel[] TheMissiles = new AModel[10];
 
         public AModel[] Missiles { get => TheMissiles; }
@@ -19,6 +20,9 @@ namespace MissileCommand.Entities
         public MissileBase(Game game, float gameScale) : base(game)
         {
             GameScale = gameScale;
+
+            Explode = new Explosion(game, gameScale);
+            Explode.Active = false;
 
             for (int i = 0; i < 10; i++)
             {
@@ -88,7 +92,10 @@ namespace MissileCommand.Entities
         {
             Active = false;
 
-            foreach(AModel missile in TheMissiles)
+            Explode.Spawn(Position);
+            Explode.MaxSize = 3;
+
+            foreach (AModel missile in TheMissiles)
             {
                 missile.Active = false;
             }

@@ -162,6 +162,16 @@ namespace Engine
         {
             return min + (float)RandomNumber.NextDouble() * (max - min);
         }
+        /// <summary>
+        /// Get a random int between min and max
+        /// </summary>
+        /// <param name="min">the minimum random value</param>
+        /// <param name="max">the maximum random value</param>
+        /// <returns>int</returns>
+        public static int RandomMinMax(int min, int max)
+        {
+            return min + (int)(RandomNumber.NextDouble() * ((max + 1) - min));
+        }
 
         public static void AddDrawableComponent(IDrawComponent drawableComponent)
         {
