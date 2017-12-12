@@ -74,17 +74,9 @@ namespace MissileCommand.Entities
                     TrailTimer.Reset();
                     Trail.ModelScale = new Vector3(Vector3.Distance(Trail.Position, Position), 1.5f, 1);
                 }
-
-                //if (Colusions())
-                //    Hit = true;
             }
 
             base.Update(gameTime);
-        }
-
-        public void Spawn(Vector3 target)
-        {
-            Spawn(new Vector3(Services.RandomMinMax(-300, 300), 450, 0), target, 10);
         }
 
         public void Spawn(Vector3 position, Mod target, float speed)
@@ -97,6 +89,7 @@ namespace MissileCommand.Entities
         public void Spawn(Vector3 position, Vector3 target, float speed)
         {
             Position = position;
+            Position.Z = 0;
             Target = target;
             Active = true;
             Hit = false;

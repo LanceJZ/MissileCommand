@@ -19,9 +19,9 @@ namespace MissileCommand.Entities
     public class EnemyMissileController : GameComponent, IBeginable, IUpdateableComponent, ILoadContent
     {
         List<Missile> TheMissiles;
-        List<Explosion> TheExplosions;
         Background BackgroundRef;
         Player PlayerRef;
+        GameLogic GameLogicRef;
 
         Timer FireTimer;
 
@@ -32,23 +32,31 @@ namespace MissileCommand.Entities
         int[] TargetedCities = new int[3];
 
         float GameScale;
-        int MaxNumberOfMissiles = 50;
+        int MaxNumberOfMissiles = 10;
         int LaunchedMissiles = 0;
-        int Group = 4;
+        int TheMissileSpeed = 15;
+        int TheWave = 0;
 
-        public EnemyMissileController(Game game, float gameScale, Background background, Player player) : base(game)
+        bool Active = true;
+
+        public List<Missile> MissileRef { get => TheMissiles; }
+        public int MissileSpeed { get => TheMissileSpeed; }
+        public int Wave { get => TheWave; }
+
+        public EnemyMissileController(Game game, GameLogic gameLogic, float gameScale) : base(game)
         {
             GameScale = gameScale;
             TheMissiles = new List<Missile>();
-            TheExplosions = new List<Explosion>();
-            BackgroundRef = background;
-            PlayerRef = player;
-            FireTimer = new Timer(game, 1.2666f);
+            GameLogicRef = gameLogic;
+            BackgroundRef = gameLogic.BackgroundRef;
+            PlayerRef = gameLogic.PlayerRef;
+            FireTimer = new Timer(game);
 
-            // Screen resolution is 1200 X 900. Top Right Corner positive.
-            // Y positive on top of window.
-            // X Positive is on the right of the window.
             game.Components.Add(this);
+            // Screen resolution is 1200 X 900.
+            // Y positive on top of window. So down is negative.
+            // X positive is right of window. So to the left is negative.
+            // Z positive is towards the front. So to place things behind, they are in the negative.
         }
 
         public override void Initialize()
@@ -99,16 +107,61 @@ namespace MissileCommand.Entities
         {
             if (FireTimer.Expired)
             {
-                FireTimer.Reset();
+                FireTimer.Reset(Services.RandomMinMax(1, 10));
                 LounchMissile();
             }
 
-            if (Collusions())
+            if (Active)
             {
-                LaunchedMissiles = 0;
+                Collusions();
             }
 
             base.Update(gameTime);
+        }
+
+        public void FireMissile(Vector3 position, Vector3 target, float speed)
+        {
+            bool spawnNew = true;
+            int freeOne = TheMissiles.Count;
+
+            for (int i = 0; i < TheMissiles.Count; i++)
+            {
+                if (!TheMissiles[i].Active)
+                {
+                    spawnNew = false;
+                    freeOne = i;
+                    break;
+                }
+            }
+
+            if (spawnNew)
+            {
+                TheMissiles.Add(new Missile(Game, GameScale));
+            }
+
+            TheMissiles[freeOne].Spawn(position, target, speed);
+            TheMissiles[freeOne].DefuseColor = new Vector3(0.1f, 1, 1);
+            TheMissiles[freeOne].TrailColor = new Vector3(1, 0, 0);
+        }
+
+        public Vector3 ChoseTarget()
+        {
+            if (Services.RandomMinMax(0.0f, 100.0f) > 50)
+            {
+                return new Vector3(BackgroundRef.Cities[TargetedCities[Services.RandomMinMax(0, 2)]].Position.X,
+                    -400, 0);
+            }
+
+            if (Services.RandomMinMax(0.0f, 100.0f) > 50)
+            {
+                int silo = Services.RandomMinMax(0, 2);
+                return new Vector3(Services.RandomMinMax(TargetBases[silo].Min,
+                    TargetBases[silo].Max), -400, 0);
+            }
+
+            int land = Services.RandomMinMax(0, 4);
+            return new Vector3(Services.RandomMinMax(TargetLand[land].Min,
+                TargetLand[land].Max), -400, 0);
         }
 
         int[] ChoseCities()
@@ -149,98 +202,38 @@ namespace MissileCommand.Entities
             return targetedCities;
         }
 
-        float ChoseTarget()
-        {
-            if (Services.RandomMinMax(0.0f, 100.0f) > 50)
-            {
-                return BackgroundRef.Cities[TargetedCities[Services.RandomMinMax(0, 2)]].Position.X;
-            }
-
-            if (Services.RandomMinMax(0.0f, 100.0f) > 50)
-            {
-                int silo = Services.RandomMinMax(0, 2);
-                return Services.RandomMinMax(TargetBases[silo].Min,
-                    TargetBases[silo].Max);
-            }
-
-            int land = Services.RandomMinMax(0, 4);
-            return Services.RandomMinMax(TargetLand[land].Min,
-                TargetLand[land].Max);
-        }
-
         void LounchMissile()
         {
             if (LaunchedMissiles < MaxNumberOfMissiles)
             {
-                Vector3 target = new Vector3(ChoseTarget(), -400, 0);
-
-                FireMissile(target);
+                FireMissile(new Vector3(Services.RandomMinMax(-300, 300), 450, 0), ChoseTarget(), TheMissileSpeed);
                 LaunchedMissiles++;
             }
             else
             {
-                TargetedCities = ChoseCities();
-            }
-        }
-
-        void FireMissile(Vector3 position)
-        {
-            bool spawnNew = true;
-            int freeOne = TheMissiles.Count;
-
-            for (int i = 0; i < TheMissiles.Count; i++)
-            {
-                if (!TheMissiles[i].Active)
+                if (CheckForActiveMissiles())
                 {
-                    spawnNew = false;
-                    freeOne = i;
-                    break;
+                    LaunchedMissiles = 0;
+                    TheMissileSpeed += 5;
+                    MaxNumberOfMissiles += 5;
+                    TheWave++;
+
+                    foreach (MissileBase silo in GameLogicRef.BackgroundRef.Bases)
+                    {
+                        silo.Spawn(new Vector3(0.2f, 0.1f, 2.5f));
+                    }
+
+                    TargetedCities = ChoseCities();
                 }
             }
-
-            if (spawnNew)
-            {
-                TheMissiles.Add(new Missile(Game, GameScale));
-            }
-
-            TheMissiles[freeOne].Spawn(position);
-            TheMissiles[freeOne].DefuseColor = new Vector3(0.1f, 1, 1);
-            TheMissiles[freeOne].TrailColor = new Vector3(1, 0, 0);
         }
 
-        void SetExplode(Vector3 position)
+        void Collusions()
         {
-            bool spawnNew = true;
-            int freeOne = TheExplosions.Count;
-
-            for (int i = 0; i < TheExplosions.Count; i++)
-            {
-                if (!TheExplosions[i].Active)
-                {
-                    spawnNew = false;
-                    freeOne = i;
-                    break;
-                }
-            }
-
-            if (spawnNew)
-            {
-                TheExplosions.Add(new Explosion(Game, GameScale));
-            }
-
-            TheExplosions[freeOne].Spawn(position);
-        }
-
-        bool Collusions()
-        {
-            bool noMissile = true;
-
             foreach (Missile missile in TheMissiles)
             {
                 if (missile.Active)
                 {
-                    noMissile = false;
-
                     if (missile.Position.Y < -400)
                     {
                         missile.Deactivate();
@@ -253,22 +246,10 @@ namespace MissileCommand.Entities
                         {
                             if (missile.CirclesIntersect(explode))
                             {
-                                SetExplode(missile.Position);
+                                GameLogicRef.ScoreUpdate(1);
+                                PlayerRef.SetExplode(missile.Position);
                                 missile.Deactivate();
-                                break;
-                            }
-                        }
-                    }
-
-                    foreach (Explosion explode in TheExplosions)
-                    {
-                        if (explode.Active)
-                        {
-                            if (missile.CirclesIntersect(explode))
-                            {
-                                SetExplode(missile.Position);
-                                missile.Deactivate();
-                                break;
+                                return;
                             }
                         }
                     }
@@ -286,7 +267,7 @@ namespace MissileCommand.Entities
                         }
                     }
 
-                    foreach(MissileBase missileBase in BackgroundRef.Bases)
+                    foreach (MissileBase missileBase in BackgroundRef.Bases)
                     {
                         if (missileBase.Active)
                         {
@@ -294,16 +275,35 @@ namespace MissileCommand.Entities
                             {
                                 missile.Deactivate();
                                 missileBase.Deativate();
+                                break;
                             }
                         }
                     }
                 }
             }
 
-            if (noMissile)
-                return true;
+            if (GameLogicRef.BomberRef.Active)
+            {
+                foreach (Explosion explode in PlayerRef.Explosions)
+                {
+                    if (explode.Active)
+                    {
+                        GameLogicRef.BomberRef.CheckCollusion(explode);
+                        break;
+                    }
+                }
+            }
+        }
 
-            return false;
+        bool CheckForActiveMissiles()
+        {
+            foreach(Missile missile in TheMissiles)
+            {
+                if (missile.Active)
+                    return false;
+            }
+
+            return true;
         }
     }
 }

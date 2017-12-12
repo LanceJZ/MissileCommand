@@ -21,6 +21,8 @@ namespace MissileCommand.Entities
 
     public class Player : Mod
     {
+        Background BackgroundRef;
+        GameLogic GameLogicRef;
         List<TargetedMissile> TheMissiles;
         List<Explosion> TheExplosions;
         MouseState LastMouseState;
@@ -30,20 +32,26 @@ namespace MissileCommand.Entities
 
         public List<Explosion> Explosions { get => TheExplosions; }
 
-        public Player(Game game, float gameScale) : base(game)
+        public Player(Game game, GameLogic gameLogic, float gameScale) : base(game)
         {
+            BackgroundRef = gameLogic.BackgroundRef;
+            GameLogicRef = gameLogic;
             GameScale = gameScale;
             TheMissiles = new List<TargetedMissile>();
             TheExplosions = new List<Explosion>();
 
             LoadContent();
             BeginRun();
-            // Screen resolution is 1200 X 900. Y positive on top of window. So up is positive.
+            // Screen resolution is 1200 X 900.
+            // Y positive on top of window. So down is negative.
+            // X positive is right of window. So to the left is negative.
+            // Z positive is towards the front. So to place things behind, they are in the negative.
         }
 
         public override void Initialize()
         {
             DefuseColor = new Vector3(0.2f, 0.1f, 2.5f); // Reddish Blue
+            Position.Z = 20;
 
             base.Initialize();
         }
@@ -83,9 +91,6 @@ namespace MissileCommand.Entities
             }
         }
 
-        // Screen resolution is 1200 X 900.
-        // Y positive on top of window. So down is negative.
-        // X positive is left of window. So to the right is negative.
         void GetInput()
         {
             MouseState theMouse = Mouse.GetState();
@@ -105,19 +110,28 @@ namespace MissileCommand.Entities
             if (!LastKeyState.IsKeyDown(Keys.Z))
             {
                 if (theKeyboard.IsKeyDown(Keys.Z))
-                    FireMissile(new Vector3(-550, -400, 0));
+                {
+                    if (BackgroundRef.Bases[0].MissileFired())
+                        FireMissile(new Vector3(-550, -400, 0));
+                }
             }
 
             if (!LastKeyState.IsKeyDown(Keys.X))
             {
                 if (theKeyboard.IsKeyDown(Keys.X))
-                    FireMissile(new Vector3(0, -400, 0));
+                {
+                    if (BackgroundRef.Bases[1].MissileFired())
+                        FireMissile(new Vector3(0, -400, 0));
+                }
             }
 
             if (!LastKeyState.IsKeyDown(Keys.C))
             {
                 if (theKeyboard.IsKeyDown(Keys.C))
-                    FireMissile(new Vector3(550, -400, 0));
+                {
+                    if (BackgroundRef.Bases[2].MissileFired())
+                        FireMissile(new Vector3(550, -400, 0));
+                }
             }
 
             LastMouseState = theMouse;
@@ -147,7 +161,7 @@ namespace MissileCommand.Entities
             TheMissiles[freeOne].Spawn(basePos, Position);
         }
 
-        void SetExplode(Vector3 position)
+        public void SetExplode(Vector3 position)
         {
             bool spawnNew = true;
             int freeOne = TheExplosions.Count;

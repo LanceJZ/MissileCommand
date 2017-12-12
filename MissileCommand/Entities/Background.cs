@@ -13,7 +13,6 @@ namespace MissileCommand.Entities
     {
         AModel[] Ground = new AModel[5];
         City[] TheCities = new City[6];
-
         MissileBase[] BaseLocations = new MissileBase[3];
 
         float GameScale;
@@ -41,8 +40,11 @@ namespace MissileCommand.Entities
                 Cities[i] = new City(game, GameScale);
             }
 
-            // Screen resolution is 1200 X 900. Y positive on top of window. So up is positive.
             game.Components.Add(this);
+            // Screen resolution is 1200 X 900.
+            // Y positive on top of window. So down is negative.
+            // X positive is right of window. So to the left is negative.
+            // Z positive is towards the front. So to place things behind, they are in the negative.
         }
 
         public override void Initialize()
@@ -53,7 +55,7 @@ namespace MissileCommand.Entities
             {
                 plot.ModelScale = new Vector3(GameScale);
                 plot.Position.Z = -10;
-                plot.Position.Y = (-Services.WindowHeight / 2);// + (14.5f * 1.9f);
+                plot.Position.Y = (-Services.WindowHeight / 2);
                 plot.Position.X = posX;
                 plot.Moveable = false;
                 plot.DefuseColor = new Vector3(1, 1, 0); //Yellow
@@ -63,16 +65,18 @@ namespace MissileCommand.Entities
             foreach (City city in TheCities)
             {
                 city.ModelScale = new Vector3(GameScale);
-                city.Position.Y = Ground[0].Position.Y + (12 * GameScale) + (14.5f * GameScale);
+                city.Position.Y = Ground[0].Position.Y + (12 * GameScale) + (14f * GameScale);
                 city.DefuseColor = new Vector3(0.2f, 0.1f, 2.5f); // Reddish Blue
             }
 
-            TheCities[0].Position.X = -240 * GameScale;
-            TheCities[1].Position.X = -129 * GameScale;
-            TheCities[2].Position.X = -53 * GameScale;
-            TheCities[3].Position.X = 53 * GameScale;
-            TheCities[4].Position.X = 134 * GameScale;
-            TheCities[5].Position.X = 216 * GameScale;
+            TheCities[0].Position.X = -241 * GameScale;
+            TheCities[1].Position.X = -130 * GameScale;
+            TheCities[2].Position.X = -54 * GameScale;
+            TheCities[3].Position.X = 52 * GameScale;
+            TheCities[4].Position.X = 132 * GameScale;
+            TheCities[5].Position.X = 214 * GameScale;
+
+            //City files are in this order. 0 = 2, 1 = 0, 2 = 4, 3, 4 = 1.
 
             for (int i = 0; i < 3; i++)
             {

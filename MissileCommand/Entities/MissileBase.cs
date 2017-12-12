@@ -60,6 +60,24 @@ namespace MissileCommand.Entities
             base.Update(gameTime);
         }
 
+        public bool MissileFired()
+        {
+            int lastInStack = 0;
+
+            foreach (AModel missile in TheMissiles)
+            {
+                if (missile.Active)
+                    lastInStack++;
+
+                if (lastInStack < 1)
+                    return false;
+            }
+
+            TheMissiles[lastInStack - 1].Active = false;
+
+            return true;
+        }
+
         public void Setup(Vector3 position)
         {
             Position = position;

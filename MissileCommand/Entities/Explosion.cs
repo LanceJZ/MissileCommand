@@ -97,6 +97,7 @@ namespace MissileCommand.Entities
         public void Spawn(Vector3 position)
         {
             Position = position;
+            Position.Z = 10;
             Active = true;
             BlinkTimer.Reset();
             ModelScale = new Vector3(0, 0, 1);

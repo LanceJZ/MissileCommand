@@ -2,7 +2,7 @@
 
 namespace Engine
 {
-    class Timer : GameComponent
+    public class Timer : GameComponent
     {
         private float m_Seconds = 0;
         private float m_Amount = 0;

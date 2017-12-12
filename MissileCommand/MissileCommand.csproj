@@ -65,6 +65,7 @@
     <Compile Include="Engine\Timer.cs" />
     <Compile Include="Engine\Words.cs" />
     <Compile Include="Entities\Background.cs" />
+    <Compile Include="Entities\Bomber.cs" />
     <Compile Include="Entities\City.cs" />
     <Compile Include="Entities\MissileBase.cs" />
     <Compile Include="Entities\Explosion.cs" />
