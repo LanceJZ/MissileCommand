@@ -9,7 +9,7 @@ using Engine;
 
 namespace MissileCommand.Entities
 {
-    public class Bomber : AModel
+    public class Satellite : AModel
     {
         GameLogic GameLogicRef;
 
@@ -17,7 +17,7 @@ namespace MissileCommand.Entities
 
         public Timer DropTimer { get => DropBombTimer; }
 
-        public Bomber(Game game, GameLogic gameLogic, float gameScale) : base(game)
+        public Satellite(Game game, GameLogic gameLogic, float gameScale) : base(game)
         {
             GameLogicRef = gameLogic;
             GameScale = gameScale;
@@ -26,21 +26,18 @@ namespace MissileCommand.Entities
 
             LoadContent();
             BeginRun();
-            // Screen resolution is 1200 X 900.
-            // Y positive on top of window. So down is negative.
-            // X positive is right of window. So to the left is negative.
-            // Z positive is towards the front. So to place things behind, they are in the negative.
         }
 
         public override void Initialize()
         {
             Active = false;
+
             base.Initialize();
         }
 
         public override void LoadContent()
         {
-            LoadModel("MC_Bomber");
+            LoadModel("MC_Satalite");
         }
 
         public override void BeginRun()
@@ -72,7 +69,7 @@ namespace MissileCommand.Entities
                 if (DropBombTimer.Expired)
                 {
                     DropBombTimer.Reset(Services.RandomMinMax(20.0f, 30.0f));
-                    GameLogicRef.DropBombs(Position, 4);
+                    GameLogicRef.DropBombs(Position, 2);
                 }
 
                 foreach (Explosion explode in GameLogicRef.PlayerRef.Explosions)
@@ -90,14 +87,7 @@ namespace MissileCommand.Entities
 
         public void Spawn()
         {
-            if (Position.X < 0)
-            {
-                Rotation.Y = 0;
-            }
-            else
-            {
-                Rotation.Y = MathHelper.Pi;
-            }
+            RotationVelocity.Y = MathHelper.PiOver4;
         }
 
         public bool CheckCollusion(Explosion explosion)
@@ -107,7 +97,7 @@ namespace MissileCommand.Entities
                 Position.X = 700;
                 GameLogicRef.ScoreUpdate(100);
                 GameLogicRef.PlayerRef.SetExplode(Position);
-                GameLogicRef.BomberTimer.Reset(Services.RandomMinMax(10.0f, 30.0f));
+                GameLogicRef.SatatliteTimer.Reset(Services.RandomMinMax(10.0f, 30.0f));
                 return true;
             }
 
@@ -118,7 +108,7 @@ namespace MissileCommand.Entities
         {
             EnemyMissileController enemyMC = GameLogicRef.MissilesRef;
 
-            for (int i = 0; i < 4; i++)
+            for (int i = 0; i < 2; i++)
             {
                 Vector3 adjust = new Vector3(0, -10, 0) + Position;
 

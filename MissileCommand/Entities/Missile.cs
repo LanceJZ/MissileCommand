@@ -10,14 +10,17 @@ using Engine;
 
 namespace MissileCommand.Entities
 {
-    using Mod = AModel;
-
-    public class Missile : Mod
+    public class Missile : AModel
     {
-        Mod Trail;
-        Vector3 Target;
-        Mod TargetMod;
+        EnemyMissileController EMC;
+        AModel Trail;
+        AModel TargetMod;
+
         Timer TrailTimer;
+        Timer SplitTimer;
+
+        Vector3 Target;
+        bool PlayerMissile = false;
 
         public float TimerAmount
         {
@@ -29,11 +32,29 @@ namespace MissileCommand.Entities
             set => Trail.DefuseColor = value;
         }
 
+        public Missile(Game game, EnemyMissileController enemyMC, float gameScale) : base(game)
+        {
+            EMC = enemyMC;
+            GameScale = gameScale;
+            Trail = new AModel(game);
+            TrailTimer = new Timer(game, 0.2666f);
+            SplitTimer = new Timer(game);
+
+            LoadContent();
+            BeginRun();
+            // Screen resolution is 1200 X 900. Top Right Corner positive.
+            // Y positive on top of window.
+            // X Positive is on the right of the window.
+        }
+
         public Missile(Game game, float gameScale) : base(game)
         {
             GameScale = gameScale;
-            Trail = new Mod(game);
+            Trail = new AModel(game);
             TrailTimer = new Timer(game, 0.2666f);
+            SplitTimer = new Timer(game);
+            SplitTimer.Enabled = false;
+            PlayerMissile = true;
 
             LoadContent();
             BeginRun();
@@ -67,19 +88,37 @@ namespace MissileCommand.Entities
 
         public override void Update(GameTime gameTime)
         {
+            base.Update(gameTime);
+
             if (Active)
             {
+                if (Hit)
+                {
+                    Trail.Update(gameTime);
+                    Active = false;
+                    Trail.Active = false;
+                    return;
+                }
+
                 if (TrailTimer.Expired)
                 {
                     TrailTimer.Reset();
                     Trail.ModelScale = new Vector3(Vector3.Distance(Trail.Position, Position), 1.5f, 1);
                 }
-            }
 
-            base.Update(gameTime);
+                if (SplitTimer.Expired && SplitTimer.Enabled)
+                {
+                    SplitTimer.Enabled = false;
+
+                    if (Services.RandomMinMax(0, 100) > 50)
+                    {
+                        EMC.FireMissile(Position, EMC.ChoseTarget(), EMC.MissileSpeed);
+                    }
+                }
+            }
         }
 
-        public void Spawn(Vector3 position, Mod target, float speed)
+        public void Spawn(Vector3 position, AModel target, float speed)
         {
             TargetMod = target;
 
@@ -94,18 +133,25 @@ namespace MissileCommand.Entities
             Active = true;
             Hit = false;
             Trail.Active = true;
+            Trail.Hit = false;
             Trail.ModelScale = new Vector3(1);
             Trail.Position = position;
             Trail.Position.Z = -2;
             Trail.Rotation = new Vector3(0, 0, AngleFromVectors(position, Target));
             Rotation = Trail.Rotation;
             Velocity = SetVelocity(AngleFromVectors(position, Target), speed);
+
+            if (!PlayerMissile)
+                SplitTimer.Reset(Services.RandomMinMax(10, 20));
         }
 
         public void Deactivate()
         {
-            Active = false;
-            Trail.Active = false;
+            Hit = true;
+            Trail.Hit = true;
+
+            Position.Y = 500;
+            Trail.ModelScale = new Vector3(0);
         }
 
         public bool Colusions()

@@ -28,7 +28,7 @@ namespace MissileCommand.Entities
         MouseState LastMouseState;
         KeyboardState LastKeyState;
 
-        float MoveSpeed = 100;
+        float MoveSpeed = 400;
 
         public List<Explosion> Explosions { get => TheExplosions; }
 

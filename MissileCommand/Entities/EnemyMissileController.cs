@@ -34,7 +34,7 @@ namespace MissileCommand.Entities
         float GameScale;
         int MaxNumberOfMissiles = 10;
         int LaunchedMissiles = 0;
-        int TheMissileSpeed = 15;
+        int TheMissileSpeed = 20;
         int TheWave = 0;
 
         bool Active = true;
@@ -136,7 +136,7 @@ namespace MissileCommand.Entities
 
             if (spawnNew)
             {
-                TheMissiles.Add(new Missile(Game, GameScale));
+                TheMissiles.Add(new Missile(Game, this, GameScale));
             }
 
             TheMissiles[freeOne].Spawn(position, target, speed);
@@ -218,9 +218,23 @@ namespace MissileCommand.Entities
                     MaxNumberOfMissiles += 5;
                     TheWave++;
 
+                    System.Diagnostics.Debug.WriteLine("Wave: " + TheWave.ToString());
+
                     foreach (MissileBase silo in GameLogicRef.BackgroundRef.Bases)
                     {
+                        foreach (AModel acm in silo.Missiles)
+                        {
+                            if (acm.Active)
+                                GameLogicRef.ScoreUpdate(25);
+                        }
+
                         silo.Spawn(new Vector3(0.2f, 0.1f, 2.5f));
+                    }
+
+                    foreach (City city in GameLogicRef.BackgroundRef.Cities)
+                    {
+                        if (city.Active)
+                            GameLogicRef.ScoreUpdate(100);
                     }
 
                     TargetedCities = ChoseCities();
@@ -246,7 +260,7 @@ namespace MissileCommand.Entities
                         {
                             if (missile.CirclesIntersect(explode))
                             {
-                                GameLogicRef.ScoreUpdate(1);
+                                GameLogicRef.ScoreUpdate(25);
                                 PlayerRef.SetExplode(missile.Position);
                                 missile.Deactivate();
                                 return;
@@ -278,18 +292,6 @@ namespace MissileCommand.Entities
                                 break;
                             }
                         }
-                    }
-                }
-            }
-
-            if (GameLogicRef.BomberRef.Active)
-            {
-                foreach (Explosion explode in PlayerRef.Explosions)
-                {
-                    if (explode.Active)
-                    {
-                        GameLogicRef.BomberRef.CheckCollusion(explode);
-                        break;
                     }
                 }
             }
