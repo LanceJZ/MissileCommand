@@ -13,6 +13,7 @@ namespace MissileCommand.Entities
     public class Missile : AModel
     {
         EnemyMissileController EMC;
+        GameLogic GameLogicRef;
         AModel Trail;
         AModel TargetMod;
 
@@ -32,9 +33,10 @@ namespace MissileCommand.Entities
             set => Trail.DefuseColor = value;
         }
 
-        public Missile(Game game, EnemyMissileController enemyMC, float gameScale) : base(game)
+        public Missile(Game game, GameLogic gameLogic, float gameScale) : base(game)
         {
-            EMC = enemyMC;
+            EMC = gameLogic.MissilesRef;
+            GameLogicRef = gameLogic;
             GameScale = gameScale;
             Trail = new AModel(game);
             TrailTimer = new Timer(game, 0.2666f);
@@ -110,9 +112,12 @@ namespace MissileCommand.Entities
                 {
                     SplitTimer.Enabled = false;
 
-                    if (Services.RandomMinMax(0, 100) > 50)
+                    if (Position.Y > 0)
                     {
-                        EMC.FireMissile(Position, EMC.ChoseTarget(), EMC.MissileSpeed);
+                        if (Services.RandomMinMax(0, 100) > (80 - (2 * EMC.Wave)))
+                        {
+                            EMC.FireMissile(Position, EMC.ChoseTarget(), EMC.MissileSpeed);
+                        }
                     }
                 }
             }

@@ -17,6 +17,9 @@ namespace MissileCommand
         SpriteBatch spriteBatch;
         GameLogic TheGame;
 
+        KeyboardState OldKeyState;
+        bool PauseGame = false;
+
         public Game1()
         {
             Graphics = new GraphicsDeviceManager(this);
@@ -99,7 +102,15 @@ namespace MissileCommand
                 Keyboard.GetState().IsKeyDown(Keys.Escape))
                 Exit();
 
-            base.Update(gameTime);
+            KeyboardState KBS = Keyboard.GetState();
+
+            if (!OldKeyState.IsKeyDown(Keys.P) && KBS.IsKeyDown(Keys.P))
+                PauseGame = !PauseGame;
+
+            OldKeyState = Keyboard.GetState();
+
+            if (!PauseGame)
+                base.Update(gameTime);
         }
 
         /// <summary>
@@ -108,7 +119,7 @@ namespace MissileCommand
         /// <param name="gameTime">Provides a snapshot of timing values.</param>
         protected override void Draw(GameTime gameTime)
         {
-            GraphicsDevice.Clear(new Color(0, 0, 0));
+            GraphicsDevice.Clear(new Color(0.05f, 0, 0.1f));
 
             base.Draw(gameTime);
         }

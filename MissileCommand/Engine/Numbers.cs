@@ -35,7 +35,7 @@ namespace Engine
         {
             for (int i = 0; i < 10; i++)
             {
-                NumberModels[i] = Game.Content.Load<XnaModel>(i.ToString());
+                NumberModels[i] = Game.Content.Load<XnaModel>("Models/Core/" + i.ToString());
             }
         }
 
@@ -105,6 +105,7 @@ namespace Engine
 
             digit.SetModel(NumberModels[number]);
             digit.Moveable = false;
+            digit.ModelScale = new Vector3(Scale);
 
             NumberEs.Add(digit);
 

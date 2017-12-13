@@ -38,10 +38,10 @@ namespace Engine
             {
                 char letter = (char)(i + 65);
 
-                WordModels[i] = Game.Content.Load<XnaModel>(letter.ToString());
+                WordModels[i] = Game.Content.Load<XnaModel>("Models/Core/" + letter.ToString());
             }
 
-            WordModels[26] = Game.Content.Load<XnaModel>("Underline");
+            WordModels[26] = Game.Content.Load<XnaModel>("Models/Core/UnderLine");
         }
 
         public void BeginRun()
@@ -101,11 +101,12 @@ namespace Engine
 
         Mod InitiateLetter(int letter)
         {
-            Mod leterModel = new Mod(Game);
-            leterModel.SetModel(WordModels[letter]);
-            leterModel.Moveable = false;
+            Mod letterModel = new Mod(Game);
+            letterModel.SetModel(WordModels[letter]);
+            letterModel.Moveable = false;
+            letterModel.ModelScale = new Vector3(Scale);
 
-            WordEs.Add(leterModel);
+            WordEs.Add(letterModel);
 
             return WordEs.Last();
         }

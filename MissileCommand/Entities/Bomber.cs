@@ -45,6 +45,7 @@ namespace MissileCommand.Entities
 
         public override void BeginRun()
         {
+            Radius = SphereRadius;
 
             base.BeginRun();
         }
@@ -100,14 +101,14 @@ namespace MissileCommand.Entities
             }
         }
 
-        public bool CheckCollusion(Explosion explosion)
+        public bool CheckCollusion(Explosion explosion) //TODO: Does not always detect hit.
         {
-            if (SphereIntersect2D(explosion))
+            if (CirclesIntersect(explosion))
             {
-                Position.X = 700;
                 GameLogicRef.ScoreUpdate(100);
                 GameLogicRef.PlayerRef.SetExplode(Position);
                 GameLogicRef.BomberTimer.Reset(Services.RandomMinMax(10.0f, 30.0f));
+                Position.X = 700;
                 return true;
             }
 

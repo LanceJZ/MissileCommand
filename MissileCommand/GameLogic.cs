@@ -21,14 +21,18 @@ namespace MissileCommand
         Satellite TheSatalite;
 
         Numbers TheScoreDisplay;
+        Words TheScoreText;
 
         Timer FPSTimer;
         Timer BomberRunTimer;
         Timer SataliteRunTimer;
 
+        Vector3 TheEnemyColor = new Vector3(1, 0, 0);
+        Vector3 ThePlayerColor = new Vector3(0.2f, 0.1f, 2.5f);
+
         float FPSFrames = 0;
 
-        float Score;
+        int Score;
 
         public Background BackgroundRef { get => TheBackground; }
         public Player PlayerRef { get => ThePlayer; }
@@ -50,6 +54,7 @@ namespace MissileCommand
             SataliteRunTimer = new Timer(game);
 
             TheScoreDisplay = new Numbers(game);
+            TheScoreText = new Words(game);
 
             // Screen resolution is 1200 X 900.
             // Y positive on top of window. So down is negative.
@@ -73,7 +78,8 @@ namespace MissileCommand
 
         public void BeginRun()
         {
-
+            TheScoreDisplay.ProcessNumber(0, new Vector3(-300, 400, 100), 2);
+            TheScoreText.ProcessWords("SCORE", new Vector3(-500, 400, 100), 2);
         }
 
         public override void Update(GameTime gameTime)
@@ -118,7 +124,8 @@ namespace MissileCommand
 
             Score += (score * muliplier);
 
-            System.Diagnostics.Debug.WriteLine("Score: " + Score.ToString());
+            TheScoreDisplay.UpdateNumber(Score);
+            //System.Diagnostics.Debug.WriteLine("Score: " + Score.ToString());
         }
 
         void BomberRun()
@@ -136,6 +143,7 @@ namespace MissileCommand
 
             Spawn(new Vector3(spawnX, Services.RandomMinMax(50.0f, 250.0f), 0), TheBomber, TheBomber.DropTimer);
             TheBomber.Spawn();
+            TheBomber.DefuseColor = new Vector3(1, 0, 0);
         }
 
         void SataliteRun()
@@ -153,6 +161,7 @@ namespace MissileCommand
 
             Spawn(new Vector3(spawnX, Services.RandomMinMax(200.0f, 400.0f), 0), TheSatalite, TheSatalite.DropTimer);
             TheSatalite.Spawn();
+            TheSatalite.DefuseColor = new Vector3(1, 0, 0);
         }
 
         public void Spawn(Vector3 position, PositionedObject po, Timer timer)

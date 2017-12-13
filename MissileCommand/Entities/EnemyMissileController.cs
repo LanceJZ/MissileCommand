@@ -31,6 +31,8 @@ namespace MissileCommand.Entities
 
         int[] TargetedCities = new int[3];
 
+        Vector3 TheColor = new Vector3(1, 0, 0);
+
         float GameScale;
         int MaxNumberOfMissiles = 10;
         int LaunchedMissiles = 0;
@@ -107,7 +109,16 @@ namespace MissileCommand.Entities
         {
             if (FireTimer.Expired)
             {
-                FireTimer.Reset(Services.RandomMinMax(1, 10));
+                float maxTime = 15.0f - (TheWave * 0.25f);
+                float minTime = 5.0f - (TheWave * 0.1f);
+
+                if (maxTime < 4)
+                    maxTime = 4;
+
+                if (minTime < 1)
+                    minTime = 1;
+
+                FireTimer.Reset(Services.RandomMinMax(minTime, maxTime));
                 LounchMissile();
             }
 
@@ -136,7 +147,7 @@ namespace MissileCommand.Entities
 
             if (spawnNew)
             {
-                TheMissiles.Add(new Missile(Game, this, GameScale));
+                TheMissiles.Add(new Missile(Game, GameLogicRef, GameScale));
             }
 
             TheMissiles[freeOne].Spawn(position, target, speed);
@@ -204,10 +215,13 @@ namespace MissileCommand.Entities
 
         void LounchMissile()
         {
-            if (LaunchedMissiles < MaxNumberOfMissiles)
+            if (LaunchedMissiles < MaxNumberOfMissiles + 4)
             {
-                FireMissile(new Vector3(Services.RandomMinMax(-300, 300), 450, 0), ChoseTarget(), TheMissileSpeed);
-                LaunchedMissiles++;
+                for (int i = 0; i < 4; i++)
+                {
+                    FireMissile(new Vector3(Services.RandomMinMax(-300, 300), 450, 0), ChoseTarget(), TheMissileSpeed);
+                    LaunchedMissiles++;
+                }
             }
             else
             {

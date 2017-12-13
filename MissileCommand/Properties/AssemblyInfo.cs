@@ -5,12 +5,12 @@ using System.Runtime.InteropServices;
 // General Information about an assembly is controlled through the following 
 // set of attributes. Change these attribute values to modify the information
 // associated with an assembly.
-[assembly: AssemblyTitle("MissileCommand")]
-[assembly: AssemblyProduct("MissileCommand")]
+[assembly: AssemblyTitle("Missile Command Alpha 1.0.0")]
+[assembly: AssemblyProduct("Missile Command")]
 [assembly: AssemblyConfiguration("")]
-[assembly: AssemblyDescription("")]
-[assembly: AssemblyCompany("")]
-[assembly: AssemblyCopyright("Copyright ©  2017")]
+[assembly: AssemblyDescription("Missile Command by Atari (c)1981 remade.")]
+[assembly: AssemblyCompany("Panther Games")]
+[assembly: AssemblyCopyright("")]
 [assembly: AssemblyTrademark("")]
 [assembly: AssemblyCulture("")]
 

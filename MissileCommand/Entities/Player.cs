@@ -97,13 +97,36 @@ namespace MissileCommand.Entities
             KeyboardState theKeyboard = Keyboard.GetState();
 
             if (theKeyboard.IsKeyDown(Keys.Up))
-                MoveUp();
+            {
+                StopMove();
+
+                if (Position.Y < 400)
+                    MoveUp();
+
+            }
             else if (theKeyboard.IsKeyDown(Keys.Down))
-                MoveDown();
+            {
+                StopMove();
+
+                if (Position.Y > -350)
+                    MoveDown();
+
+            }
             else if (theKeyboard.IsKeyDown(Keys.Left))
-                MoveLeft();
+            {
+                StopMove();
+
+                if (Position.X > -580)
+                    MoveLeft();
+
+            }
             else if (theKeyboard.IsKeyDown(Keys.Right))
-                MoveRight();
+            {
+                StopMove();
+
+                if (Position.X < 580)
+                    MoveRight();
+            }
             else
                 StopMove();
 
