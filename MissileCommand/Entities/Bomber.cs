@@ -40,6 +40,7 @@ namespace MissileCommand.Entities
         public override void Initialize()
         {
             Active = false;
+
             base.Initialize();
         }
 
@@ -63,19 +64,13 @@ namespace MissileCommand.Entities
             {
                 if (Hit)
                 {
-                    if (AnimationDone)
-                    {
-                        Active = false;
-                    }
-
-                    EndAnimation();
+                    RunEndAnimation();
                     return;
                 }
 
                 if (Position.X > 650 || Position.X < -650)
                 {
-                    Hit = true;
-                    Position.X = 700;
+                    Active = false;
                     GameLogicRef.BomberTimer.Reset(Services.RandomMinMax(10.0f, 30.0f));
                     return;
                 }
@@ -106,9 +101,10 @@ namespace MissileCommand.Entities
             RotationVelocity.X = 0;
             AnimationDone = false;
             AnimationStart = false;
+            MatrixUpdate();
         }
 
-        void EndAnimation()
+        void RunEndAnimation()
         {
             if (!AnimationStart)
             {
@@ -119,8 +115,7 @@ namespace MissileCommand.Entities
 
             if (AnimationTimer.Expired)
             {
-                AnimationDone = true;
-                Position.X = 700;
+                Active = false;
             }
         }
     }

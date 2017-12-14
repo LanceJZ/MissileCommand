@@ -157,8 +157,8 @@ namespace MissileCommand
 
         public void Spawn(Vector3 position, PositionedObject po, Timer timer)
         {
-            po.Position = position;
             timer.Reset(Services.RandomMinMax(10.0f, 35.0f));
+            po.Position = position;
             po.Active = true;
             po.Hit = false;
 

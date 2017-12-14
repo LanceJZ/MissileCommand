@@ -95,6 +95,7 @@ namespace Engine
             foreach (Mod letter in WordEs)
             {
                 letter.Position = Position - new Vector3(space, 0, 0);
+                letter.MatrixUpdate();
                 space -= Scale * 11.5f;
             }
         }

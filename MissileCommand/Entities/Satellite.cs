@@ -65,7 +65,6 @@ namespace MissileCommand.Entities
                 {
                     Hit = true;
                     GameLogicRef.SatatliteTimer.Reset(Services.RandomMinMax(10.0f, 20.0f));
-                    Position.X = 700;
                     return;
                 }
 
@@ -82,6 +81,7 @@ namespace MissileCommand.Entities
         public void Spawn()
         {
             RotationVelocity.Y = MathHelper.PiOver4;
+            MatrixUpdate();
         }
     }
 }

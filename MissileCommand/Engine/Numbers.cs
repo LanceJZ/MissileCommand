@@ -81,6 +81,7 @@ namespace Engine
             foreach(Mod number in NumberEs)
             {
                 number.Position = Position - new Vector3(space, 0, 0);
+                number.MatrixUpdate();
                 space += Scale * 11;
             }
         }

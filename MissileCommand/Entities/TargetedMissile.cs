@@ -38,6 +38,7 @@ namespace MissileCommand.Entities
 
         public override void BeginRun()
         {
+            Active = false;
 
             base.BeginRun();
         }
@@ -63,6 +64,8 @@ namespace MissileCommand.Entities
             TheMissile.TrailColor = new Vector3(0.1f, 0, 2);
             TheMissile.TimerAmount = 0.06f;
             DefuseColor = new Vector3(0, 0.1f, 2);
+            MatrixUpdate();
+            TheMissile.MatrixUpdate();
         }
     }
 }

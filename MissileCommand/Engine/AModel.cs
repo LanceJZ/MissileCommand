@@ -55,12 +55,13 @@ namespace Engine
             Services.GraphicsDM.GraphicsDevice.BlendState = BlendState.Opaque;
             Services.GraphicsDM.GraphicsDevice.DepthStencilState = DepthStencilState.Default;
 
+            BaseWorld = Matrix.Identity;
+
             base.Initialize();
         }
 
         public override void BeginRun()
         {
-
             base.BeginRun();
         }
 
@@ -84,19 +85,18 @@ namespace Engine
                             as the location of earth in this case since it's already setup to be in orbit.*/
                 // Calculate the base transformation by combining
                 // translation, rotation, and scaling
-                BaseWorld = Matrix.Identity;
+                MatrixUpdate();
+                //BaseWorld = Matrix.CreateScale(ModelScale)
+                //    * Matrix.CreateFromYawPitchRoll(Rotation.Y, Rotation.X, Rotation.Z)
+                //    * Matrix.CreateTranslation(Position);
 
-                BaseWorld = Matrix.CreateScale(ModelScale)
-                    * Matrix.CreateFromYawPitchRoll(Rotation.Y, Rotation.X, Rotation.Z)
-                    * Matrix.CreateTranslation(Position);
-
-                if (Child)
-                {
-                    BaseWorld *= Matrix.CreateFromYawPitchRoll(ParentPO.Rotation.Y + ParentPO.ParentRotation.Y,
-                        ParentPO.Rotation.X + ParentPO.ParentRotation.X,
-                        ParentPO.Rotation.Z + ParentPO.ParentRotation.Z)
-                        * Matrix.CreateTranslation(ParentPO.Position + ParentPO.ParentPosition);
-                }
+                //if (Child)
+                //{
+                //    BaseWorld *= Matrix.CreateFromYawPitchRoll(ParentPO.Rotation.Y + ParentPO.ParentRotation.Y,
+                //        ParentPO.Rotation.X + ParentPO.ParentRotation.X,
+                //        ParentPO.Rotation.Z + ParentPO.ParentRotation.Z)
+                //        * Matrix.CreateTranslation(ParentPO.Position + ParentPO.ParentPosition);
+                //}
 
                 if (m_AnimatedScale)
                 {
@@ -141,6 +141,20 @@ namespace Engine
             }
         }
 
+        public void MatrixUpdate()
+        {
+            BaseWorld = Matrix.CreateScale(ModelScale)
+                * Matrix.CreateFromYawPitchRoll(Rotation.Y, Rotation.X, Rotation.Z)
+                * Matrix.CreateTranslation(Position);
+
+            if (Child)
+            {
+                BaseWorld *= Matrix.CreateFromYawPitchRoll(ParentPO.Rotation.Y + ParentPO.ParentRotation.Y,
+                    ParentPO.Rotation.X + ParentPO.ParentRotation.X,
+                    ParentPO.Rotation.Z + ParentPO.ParentRotation.Z)
+                    * Matrix.CreateTranslation(ParentPO.Position + ParentPO.ParentPosition);
+            }
+        }
         /// <summary>
         /// Sphere collusion detection. Target sphere will be compared to this class's.
         /// Will return true of they intersect on the X and Y plane.

@@ -10,9 +10,7 @@ using Engine;
 
 namespace MissileCommand.Entities
 {
-    using Mod = AModel;
-
-    public class Explosion : Mod
+    public class Explosion : AModel
     {
         Timer BlinkTimer;
         float Speed = 0.5f;
@@ -34,6 +32,7 @@ namespace MissileCommand.Entities
         public override void Initialize()
         {
             Moveable = false;
+            Active = false;
 
             base.Initialize();
         }
@@ -100,8 +99,9 @@ namespace MissileCommand.Entities
             Position.Z = 10;
             Active = true;
             BlinkTimer.Reset();
-            ModelScale = new Vector3(0, 0, 1);
+            ModelScale = new Vector3(0, 0, 0.1f);
             Growing = true;
+            MatrixUpdate();
         }
     }
 }

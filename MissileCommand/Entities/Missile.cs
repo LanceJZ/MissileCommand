@@ -82,6 +82,7 @@ namespace MissileCommand.Entities
         public override void BeginRun()
         {
             Trail.Moveable = false;
+            Trail.Active = false;
             Trail.ModelScale = new Vector3(1.5f);
             Radius = SphereRadius;
 
@@ -90,18 +91,8 @@ namespace MissileCommand.Entities
 
         public override void Update(GameTime gameTime)
         {
-            base.Update(gameTime);
-
             if (Active)
             {
-                if (Hit)
-                {
-                    Trail.Update(gameTime);
-                    Active = false;
-                    Trail.Active = false;
-                    return;
-                }
-
                 if (TrailTimer.Expired)
                 {
                     TrailTimer.Reset();
@@ -121,6 +112,8 @@ namespace MissileCommand.Entities
                     }
                 }
             }
+
+            base.Update(gameTime);
         }
 
         public void Spawn(Vector3 position, AModel target, float speed)
@@ -139,12 +132,14 @@ namespace MissileCommand.Entities
             Hit = false;
             Trail.Active = true;
             Trail.Hit = false;
-            Trail.ModelScale = new Vector3(1);
+            Trail.ModelScale = new Vector3(0);
             Trail.Position = position;
             Trail.Position.Z = -2;
             Trail.Rotation = new Vector3(0, 0, AngleFromVectors(position, Target));
             Rotation = Trail.Rotation;
             Velocity = SetVelocity(AngleFromVectors(position, Target), speed);
+            MatrixUpdate();
+            Trail.MatrixUpdate();
 
             if (!PlayerMissile)
                 SplitTimer.Reset(Services.RandomMinMax(10, 20));
@@ -152,21 +147,21 @@ namespace MissileCommand.Entities
 
         public void Deactivate()
         {
-            Hit = true;
-            Trail.Hit = true;
-
-            Position.Y = 500;
-            Trail.ModelScale = new Vector3(0);
+            Active = false;
+            Trail.Active = false;
         }
 
         public bool Colusions()
         {
             if (TargetMod != null)
             {
-                if (SphereIntersect2D(TargetMod))
+                if (TargetMod.Active)
                 {
-                    TargetMod.Active = false;
-                    return true;
+                    if (SphereIntersect2D(TargetMod))
+                    {
+                        TargetMod.Active = false;
+                        return true;
+                    }
                 }
             }
 
