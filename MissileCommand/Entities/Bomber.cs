@@ -14,6 +14,10 @@ namespace MissileCommand.Entities
         GameLogic GameLogicRef;
 
         Timer DropBombTimer;
+        Timer AnimationTimer;
+
+        bool AnimationDone;
+        bool AnimationStart;
 
         public Timer DropTimer { get => DropBombTimer; }
 
@@ -23,6 +27,7 @@ namespace MissileCommand.Entities
             GameScale = gameScale;
 
             DropBombTimer = new Timer(game);
+            AnimationTimer = new Timer(game);
 
             LoadContent();
             BeginRun();
@@ -58,7 +63,12 @@ namespace MissileCommand.Entities
             {
                 if (Hit)
                 {
-                    Active = false;
+                    if (AnimationDone)
+                    {
+                        Active = false;
+                    }
+
+                    EndAnimation();
                     return;
                 }
 
@@ -76,16 +86,7 @@ namespace MissileCommand.Entities
                     GameLogicRef.DropBombs(Position, 4);
                 }
 
-                foreach (Explosion explode in GameLogicRef.PlayerRef.Explosions)
-                {
-                    if (explode.Active)
-                    {
-                        if (CheckCollusion(explode))
-                            Hit = true;
-
-                        break;
-                    }
-                }
+                GameLogicRef.CheckCollusion(this, GameLogicRef.BomberTimer);
             }
         }
 
@@ -99,31 +100,27 @@ namespace MissileCommand.Entities
             {
                 Rotation.Y = MathHelper.Pi;
             }
+
+            Rotation.X = 0;
+            RotationAcceleration.X = 0;
+            RotationVelocity.X = 0;
+            AnimationDone = false;
+            AnimationStart = false;
         }
 
-        public bool CheckCollusion(Explosion explosion) //TODO: Does not always detect hit.
+        void EndAnimation()
         {
-            if (CirclesIntersect(explosion))
+            if (!AnimationStart)
             {
-                GameLogicRef.ScoreUpdate(100);
-                GameLogicRef.PlayerRef.SetExplode(Position);
-                GameLogicRef.BomberTimer.Reset(Services.RandomMinMax(10.0f, 30.0f));
-                Position.X = 700;
-                return true;
+                RotationAcceleration.X = Services.RandomMinMax(-1.0f, 1.0f);
+                AnimationStart = true;
+                AnimationTimer.Reset(Services.RandomMinMax(2, 4));
             }
 
-            return false;
-        }
-
-        void DropBombs()
-        {
-            EnemyMissileController enemyMC = GameLogicRef.MissilesRef;
-
-            for (int i = 0; i < 4; i++)
+            if (AnimationTimer.Expired)
             {
-                Vector3 adjust = new Vector3(0, -10, 0) + Position;
-
-                enemyMC.FireMissile(adjust, enemyMC.ChoseTarget(), enemyMC.MissileSpeed);
+                AnimationDone = true;
+                Position.X = 700;
             }
         }
     }

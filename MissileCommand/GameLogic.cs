@@ -93,25 +93,39 @@ namespace MissileCommand
                 FPSFrames = 0;
             }
 
-            if (BomberRunTimer.Expired && TheMissiles.Wave > 0)
+            if (MissilesRef.MissilesLaunched < MissilesRef.MaxMissiles)
             {
-                BomberRunTimer.Reset(Services.RandomMinMax(10.0f, 30.0f));
+                float spawnX;
 
-                if (Services.RandomMinMax(0, 100) > 25)
+                if (Services.RandomMinMax(0, 100) > 50)
                 {
-                    if (!TheBomber.Active)
-                        BomberRun();
+                    spawnX = -600;
                 }
-            }
-
-            if (SataliteRunTimer.Expired && TheMissiles.Wave > 1)
-            {
-                SataliteRunTimer.Reset(Services.RandomMinMax(10.0f, 20.0f));
-
-                if (Services.RandomMinMax(0, 100) > 25)
+                else
                 {
-                    if (!TheSatalite.Active)
-                        SataliteRun();
+                    spawnX = 600;
+                }
+
+                if (BomberRunTimer.Expired && TheMissiles.Wave > 0)
+                {
+                    BomberRunTimer.Reset(Services.RandomMinMax(10.0f, 30.0f));
+
+                    if (Services.RandomMinMax(0, 100) > 25)
+                    {
+                        if (!TheBomber.Active)
+                            BomberRun(spawnX);
+                    }
+                }
+
+                if (SataliteRunTimer.Expired && TheMissiles.Wave > 1)
+                {
+                    SataliteRunTimer.Reset(Services.RandomMinMax(10.0f, 20.0f));
+
+                    if (Services.RandomMinMax(0, 100) > 25)
+                    {
+                        if (!TheSatalite.Active)
+                            SataliteRun(spawnX);
+                    }
                 }
             }
 
@@ -125,41 +139,18 @@ namespace MissileCommand
             Score += (score * muliplier);
 
             TheScoreDisplay.UpdateNumber(Score);
-            //System.Diagnostics.Debug.WriteLine("Score: " + Score.ToString());
         }
 
-        void BomberRun()
+        void BomberRun(float spawnX)
         {
-            float spawnX;
-
-            if (Services.RandomMinMax(0, 100) > 50)
-            {
-                spawnX = -600;
-            }
-            else
-            {
-                spawnX = 600;
-            }
-
             Spawn(new Vector3(spawnX, Services.RandomMinMax(50.0f, 250.0f), 0), TheBomber, TheBomber.DropTimer);
             TheBomber.Spawn();
             TheBomber.DefuseColor = new Vector3(1, 0, 0);
         }
 
-        void SataliteRun()
+        void SataliteRun(float spawnX)
         {
-            float spawnX;
-
-            if (Services.RandomMinMax(0, 100) > 50)
-            {
-                spawnX = -600;
-            }
-            else
-            {
-                spawnX = 600;
-            }
-
-            Spawn(new Vector3(spawnX, Services.RandomMinMax(200.0f, 400.0f), 0), TheSatalite, TheSatalite.DropTimer);
+            Spawn(new Vector3(spawnX, Services.RandomMinMax(300.0f, 400.0f), 0), TheSatalite, TheSatalite.DropTimer);
             TheSatalite.Spawn();
             TheSatalite.DefuseColor = new Vector3(1, 0, 0);
         }
@@ -182,15 +173,21 @@ namespace MissileCommand
 
         }
 
-        public void CheckCollusion(AModel model, PositionedObject po, Explosion explosion, Timer timer)
+        public void CheckCollusion(PositionedObject po, Timer timer)
         {
-            if (model.SphereIntersect2D(explosion))
+            foreach (Explosion explode in PlayerRef.Explosions)
             {
-                po.Hit = true;
-                po.Position.X = 700;
-                ScoreUpdate(100);
-                PlayerRef.SetExplode(po.Position);
-                timer.Reset(Services.RandomMinMax(10.0f, 30.0f));
+                if (explode.Active)
+                {
+                    if (po.CirclesIntersect(explode))
+                    {
+                        ScoreUpdate(100);
+                        PlayerRef.SetExplode(po.Position);
+                        timer.Reset(Services.RandomMinMax(10.0f, 30.0f));
+                        po.Hit = true;
+                        break;
+                    }
+                }
             }
         }
 

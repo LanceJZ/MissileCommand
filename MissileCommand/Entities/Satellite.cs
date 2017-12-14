@@ -55,6 +55,8 @@ namespace MissileCommand.Entities
             {
                 if (Hit)
                 {
+                    Position.X = 700;
+                    base.Update(gameTime);
                     Active = false;
                     return;
                 }
@@ -62,8 +64,8 @@ namespace MissileCommand.Entities
                 if (Position.X > 650 || Position.X < -650)
                 {
                     Hit = true;
-                    Position.X = 700;
                     GameLogicRef.SatatliteTimer.Reset(Services.RandomMinMax(10.0f, 20.0f));
+                    Position.X = 700;
                     return;
                 }
 
@@ -73,48 +75,13 @@ namespace MissileCommand.Entities
                     GameLogicRef.DropBombs(Position, 2);
                 }
 
-                foreach (Explosion explode in GameLogicRef.PlayerRef.Explosions)
-                {
-                    if (explode.Active)
-                    {
-                        if (CheckCollusion(explode))
-                            Hit = true;
-
-                        break;
-                    }
-                }
+                GameLogicRef.CheckCollusion(this, GameLogicRef.SatatliteTimer);
             }
         }
 
         public void Spawn()
         {
             RotationVelocity.Y = MathHelper.PiOver4;
-        }
-
-        public bool CheckCollusion(Explosion explosion)
-        {
-            if (CirclesIntersect(explosion))
-            {
-                GameLogicRef.ScoreUpdate(100);
-                GameLogicRef.PlayerRef.SetExplode(Position);
-                GameLogicRef.SatatliteTimer.Reset(Services.RandomMinMax(10.0f, 30.0f));
-                Position.X = 700;
-                return true;
-            }
-
-            return false;
-        }
-
-        void DropBombs()
-        {
-            EnemyMissileController enemyMC = GameLogicRef.MissilesRef;
-
-            for (int i = 0; i < 2; i++)
-            {
-                Vector3 adjust = new Vector3(0, -10, 0) + Position;
-
-                enemyMC.FireMissile(adjust, enemyMC.ChoseTarget(), enemyMC.MissileSpeed);
-            }
         }
     }
 }

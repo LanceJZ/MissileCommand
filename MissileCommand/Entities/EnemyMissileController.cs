@@ -43,6 +43,8 @@ namespace MissileCommand.Entities
 
         public List<Missile> MissileRef { get => TheMissiles; }
         public int MissileSpeed { get => TheMissileSpeed; }
+        public int MissilesLaunched { get => LaunchedMissiles; }
+        public int MaxMissiles { get => MaxNumberOfMissiles; }
         public int Wave { get => TheWave; }
 
         public EnemyMissileController(Game game, GameLogic gameLogic, float gameScale) : base(game)
@@ -228,11 +230,13 @@ namespace MissileCommand.Entities
                 if (CheckForActiveMissiles())
                 {
                     LaunchedMissiles = 0;
-                    TheMissileSpeed += 5;
-                    MaxNumberOfMissiles += 5;
+                    TheMissileSpeed += 3;
+                    MaxNumberOfMissiles += 2;
                     TheWave++;
+                    GameLogicRef.BomberTimer.Reset(15);
+                    GameLogicRef.SatatliteTimer.Reset(12);
 
-                    System.Diagnostics.Debug.WriteLine("Wave: " + TheWave.ToString());
+                    //System.Diagnostics.Debug.WriteLine("Wave: " + TheWave.ToString());
 
                     foreach (MissileBase silo in GameLogicRef.BackgroundRef.Bases)
                     {
