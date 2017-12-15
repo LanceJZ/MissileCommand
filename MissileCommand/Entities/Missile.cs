@@ -135,9 +135,9 @@ namespace MissileCommand.Entities
             Trail.ModelScale = new Vector3(0);
             Trail.Position = position;
             Trail.Position.Z = -2;
-            Trail.Rotation = new Vector3(0, 0, AngleFromVectors(position, Target));
+            Trail.Rotation = new Vector3(0, 0, AngleFromVectors(Target));
             Rotation = Trail.Rotation;
-            Velocity = SetVelocity(AngleFromVectors(position, Target), speed);
+            Velocity = VelocityFromVectors(Target, speed);
             MatrixUpdate();
             Trail.MatrixUpdate();
 

@@ -19,6 +19,7 @@ namespace MissileCommand
         Player ThePlayer;
         Bomber TheBomber;
         Satellite TheSatalite;
+        SmartBomb TheSmartBomb;
 
         Numbers TheScoreDisplay;
         Words TheScoreText;
@@ -26,6 +27,7 @@ namespace MissileCommand
         Timer FPSTimer;
         Timer BomberRunTimer;
         Timer SataliteRunTimer;
+        Timer SmartBombRunTimer;
 
         Vector3 TheEnemyColor = new Vector3(1, 0, 0);
         Vector3 ThePlayerColor = new Vector3(0.2f, 0.1f, 2.5f);
@@ -40,6 +42,7 @@ namespace MissileCommand
         public Bomber BomberRef { get => TheBomber; }
         public Timer BomberTimer { get => BomberRunTimer; }
         public Timer SatatliteTimer { get => SataliteRunTimer; }
+        public Timer SmartBombTimer { get => SmartBombRunTimer; }
 
         public GameLogic(Game game) : base(game)
         {
@@ -48,10 +51,12 @@ namespace MissileCommand
             TheMissiles = new EnemyMissileController(game, this, GameScale);
             TheBomber = new Bomber(game, this, GameScale);
             TheSatalite = new Satellite(game, this, GameScale);
+            TheSmartBomb = new SmartBomb(game, this, GameScale);
 
             FPSTimer = new Timer(game, 1);
             BomberRunTimer = new Timer(game);
             SataliteRunTimer = new Timer(game);
+            SmartBombRunTimer = new Timer(game);
 
             TheScoreDisplay = new Numbers(game);
             TheScoreText = new Words(game);
@@ -125,6 +130,20 @@ namespace MissileCommand
                     {
                         if (!TheSatalite.Active)
                             SataliteRun(spawnX);
+                    }
+                }
+
+                if (SmartBombRunTimer.Expired && TheMissiles.Wave > 5)
+                {
+                    SmartBombRunTimer.Reset(Services.RandomMinMax(10, 20));
+
+                    if (Services.RandomMinMax(0, 100) > 25)
+                    {
+                        if (!TheSmartBomb.Active)
+                        {
+                            TheSmartBomb.Spawn(new Vector3(Services.RandomMinMax(-400, 400), 550, 0));
+                            TheSmartBomb.DefuseColor = TheEnemyColor;
+                        }
                     }
                 }
             }

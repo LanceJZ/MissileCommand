@@ -159,22 +159,36 @@ namespace MissileCommand.Entities
 
         public Vector3 ChoseTarget()
         {
+            if (Services.RandomMinMax(0.0f, 100.0f) < 40 + (TheWave * 1.5f))
+            {
+                return ChoseCitySiloTarget();
+            }
+            else
+            {
+                return ChoseLandTarget();
+            }
+        }
+
+        public Vector3 ChoseLandTarget()
+        {
+            int land = Services.RandomMinMax(0, 4);
+            return new Vector3(Services.RandomMinMax(TargetLand[land].Min,
+                TargetLand[land].Max), -400, 0);
+        }
+
+        public Vector3 ChoseCitySiloTarget()
+        {
             if (Services.RandomMinMax(0.0f, 100.0f) > 50)
             {
                 return new Vector3(BackgroundRef.Cities[TargetedCities[Services.RandomMinMax(0, 2)]].Position.X,
                     -400, 0);
             }
-
-            if (Services.RandomMinMax(0.0f, 100.0f) > 50)
+            else
             {
                 int silo = Services.RandomMinMax(0, 2);
                 return new Vector3(Services.RandomMinMax(TargetBases[silo].Min,
                     TargetBases[silo].Max), -400, 0);
             }
-
-            int land = Services.RandomMinMax(0, 4);
-            return new Vector3(Services.RandomMinMax(TargetLand[land].Min,
-                TargetLand[land].Max), -400, 0);
         }
 
         int[] ChoseCities()
@@ -299,14 +313,14 @@ namespace MissileCommand.Entities
                         }
                     }
 
-                    foreach (MissileBase missileBase in BackgroundRef.Bases)
+                    foreach (MissileBase silo in BackgroundRef.Bases)
                     {
-                        if (missileBase.Active)
+                        if (silo.Active)
                         {
-                            if (missile.CirclesIntersect(missileBase))
+                            if (missile.CirclesIntersect(silo))
                             {
                                 missile.Deactivate();
-                                missileBase.Deativate();
+                                silo.Deativate();
                                 break;
                             }
                         }

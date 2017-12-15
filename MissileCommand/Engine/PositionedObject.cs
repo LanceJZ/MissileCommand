@@ -215,27 +215,44 @@ namespace Engine
             return false;
         }
         /// <summary>
-        /// Returns a Vector3 direction of travel from angle and magnitude.
+        /// Returns Vector3 direction of travel from origin to target. Z is ignored.
         /// </summary>
-        /// <param name="angle"></param>
-        /// <param name="magnitude"></param>
-        /// <returns>Vector2</returns>
-        public Vector3 SetVelocity(float angle, float magnitude)
+        /// <param name="origin">Vector3 of origin</param>
+        /// <param name="target">Vector3 of target</param>
+        /// <param name="magnitude">float of speed of travel</param>
+        /// <returns>Vector3</returns>
+        public Vector3 VelocityFromVectors(Vector3 origin, Vector3 target, float magnitude)
         {
-            Vector3 vel = Vector3.Zero;
-            vel.Y = (float)(Math.Sin(angle) * magnitude);
-            vel.X = (float)(Math.Cos(angle) * magnitude);
-            return vel;
+            return VelocityFromAngle(AngleFromVectors(origin, target), magnitude);
         }
         /// <summary>
-        /// Returns a float of the angle in radians derived from two Vector2 passed into it, using only the X and Y.
+        /// Returns Vector3 direction of travel to target. Z is ignored.
         /// </summary>
-        /// <param name="origin">Vector2 of origin</param>
-        /// <param name="target">Vector2 of target</param>
+        /// <param name="target">Vector3 of target</param>
+        /// <param name="magnitude">float of speed of travel</param>
+        /// <returns>Vector3</returns>
+        public Vector3 VelocityFromVectors(Vector3 target, float magnitude)
+        {
+            return VelocityFromAngle(AngleFromVectors(target), magnitude);
+        }
+        /// <summary>
+        /// Returns a float of the angle in radians derived from two Vector3 passed into it, using only the X and Y.
+        /// </summary>
+        /// <param name="origin">Vector3 of origin</param>
+        /// <param name="target">Vector3 of target</param>
         /// <returns>Float</returns>
         public float AngleFromVectors(Vector3 origin, Vector3 target)
         {
             return (float)(Math.Atan2(target.Y - origin.Y, target.X - origin.X));
+        }
+        /// <summary>
+        /// Returns a float of the angle in radians to target, using only the X and Y.
+        /// </summary>
+        /// <param name="target">Vector3 of target</param>
+        /// <returns>Float</returns>
+        public float AngleFromVectors(Vector3 target)
+        {
+            return (float)(Math.Atan2(target.Y - Position.Y, target.X - Position.X));
         }
 
         public float RandomRadian()
@@ -243,36 +260,41 @@ namespace Engine
             return Services.RandomMinMax(0, MathHelper.TwoPi);
         }
 
-        public Vector3 SetRandomVelocity(float speed)
+        public Vector3 RandomVelocity(float speed)
         {
             float ang = RandomRadian();
             float amt = Services.RandomMinMax(speed * 0.15f, speed);
-            return SetVelocityFromAngle(ang, amt);
+            return VelocityFromAngle(ang, amt);
         }
 
-        public Vector3 SetRandomVelocity(float speed, float radianDirection)
+        public Vector3 RandomVelocity(float speed, float radianDirection)
         {
             float amt = Services.RandomMinMax(speed * 0.15f, speed);
-            return SetVelocityFromAngle(radianDirection, amt);
+            return VelocityFromAngle(radianDirection, amt);
         }
 
-        public Vector3 SetVelocityFromAngle(float rotation, float magnitude)
+        /// <summary>
+        /// Returns a Vector3 direction of travel from angle and magnitude. Z is ignored.
+        /// </summary>
+        /// <param name="angle"></param>
+        /// <param name="magnitude"></param>
+        /// <returns>Vector3</returns>
+        public Vector3 VelocityFromAngle(float rotation, float magnitude)
         {
             return new Vector3((float)Math.Cos(rotation) * magnitude, (float)Math.Sin(rotation) * magnitude, 0);
         }
-
-        public Vector3 SetVelocity3FromAngleZ(float rotationZ, float magnitude)
+        /// <summary>
+        /// Returns a Vector3 direction of travel from random angle and set magnitude. Z is ignored.
+        /// </summary>
+        /// <param name="magnitude"></param>
+        /// <returns>Vector3</returns>
+        public Vector3 VelocityFromAngle(float magnitude)
         {
-            return new Vector3((float)Math.Cos(rotationZ) * magnitude, (float)Math.Sin(rotationZ) * magnitude, 0);
+            float angle = RandomRadian();
+            return new Vector3((float)Math.Cos(angle) * magnitude, (float)Math.Sin(angle) * magnitude, 0);
         }
 
-        public Vector2 SetVelocityFromAngle(float magnitude)
-        {
-            float ang = RandomRadian();
-            return new Vector2((float)Math.Cos(ang) * magnitude, (float)Math.Sin(ang) * magnitude);
-        }
-
-        public Vector2 SetRandomEdge()
+        public Vector2 RandomEdge()
         {
             return new Vector2(Services.WindowWidth * 0.5f,
                 Services.RandomMinMax(-Services.WindowHeight * 0.45f, Services.WindowHeight * 0.45f));
