@@ -10,8 +10,6 @@ using Engine;
 
 namespace MissileCommand.Entities
 {
-    using Mod = AModel;
-
     enum BaseFired
     {
         Alpha,
@@ -19,12 +17,17 @@ namespace MissileCommand.Entities
         Ogega
     };
 
-    public class Player : Mod
+    public class Player : AModel
     {
         Background BackgroundRef;
         GameLogic GameLogicRef;
         List<TargetedMissile> TheMissiles;
         List<Explosion> TheExplosions;
+
+        SoundEffect LaunchSound;
+        SoundEffect ExplosionSound;
+        SoundEffect EmptySiloSound;
+
         MouseState LastMouseState;
         KeyboardState LastKeyState;
 
@@ -59,6 +62,9 @@ namespace MissileCommand.Entities
         public override void LoadContent()
         {
             LoadModel("MC_CrossHair");
+            LaunchSound = LoadSoundEffect("Player Missile Launch");
+            ExplosionSound = LoadSoundEffect("Explosion");
+            EmptySiloSound = LoadSoundEffect("Empty Silo");
         }
 
         public override void BeginRun()
@@ -136,6 +142,8 @@ namespace MissileCommand.Entities
                 {
                     if (BackgroundRef.Bases[0].MissileFired())
                         FireMissile(new Vector3(-550, -400, 0));
+                    else
+                        EmptySiloSound.Play();
                 }
             }
 
@@ -145,6 +153,8 @@ namespace MissileCommand.Entities
                 {
                     if (BackgroundRef.Bases[1].MissileFired())
                         FireMissile(new Vector3(0, -400, 0));
+                    else
+                        EmptySiloSound.Play();
                 }
             }
 
@@ -154,6 +164,8 @@ namespace MissileCommand.Entities
                 {
                     if (BackgroundRef.Bases[2].MissileFired())
                         FireMissile(new Vector3(550, -400, 0));
+                    else
+                        EmptySiloSound.Play();
                 }
             }
 
@@ -163,6 +175,8 @@ namespace MissileCommand.Entities
 
         void FireMissile(Vector3 basePos)
         {
+            LaunchSound.Play();
+
             bool spawnNew = true;
             int freeOne = TheMissiles.Count;
 
@@ -186,6 +200,8 @@ namespace MissileCommand.Entities
 
         public void SetExplode(Vector3 position)
         {
+            ExplosionSound.Play();
+
             bool spawnNew = true;
             int freeOne = TheExplosions.Count;
 

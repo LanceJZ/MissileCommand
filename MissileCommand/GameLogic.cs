@@ -28,6 +28,9 @@ namespace MissileCommand
         Timer BomberRunTimer;
         Timer SataliteRunTimer;
         Timer SmartBombRunTimer;
+        Timer RadarSoundTimer;
+
+        SoundEffect RadarSound;
 
         Vector3 TheEnemyColor = new Vector3(1, 0, 0);
         Vector3 ThePlayerColor = new Vector3(0.2f, 0.1f, 2.5f);
@@ -57,6 +60,7 @@ namespace MissileCommand
             BomberRunTimer = new Timer(game);
             SataliteRunTimer = new Timer(game);
             SmartBombRunTimer = new Timer(game);
+            RadarSoundTimer = new Timer(game);
 
             TheScoreDisplay = new Numbers(game);
             TheScoreText = new Words(game);
@@ -78,13 +82,15 @@ namespace MissileCommand
 
         public void LoadContent()
         {
-
+            RadarSound = PlayerRef.LoadSoundEffect("Radar");
         }
 
         public void BeginRun()
         {
-            TheScoreDisplay.ProcessNumber(0, new Vector3(-300, 400, 100), 2);
-            TheScoreText.ProcessWords("SCORE", new Vector3(-500, 400, 100), 2);
+            TheScoreDisplay.ProcessNumber(0, new Vector3(-250, 400, 100), 2);
+            TheScoreText.ProcessWords("SCORE", new Vector3(-550, 400, 100), 2);
+
+            RadarSoundTimer.Amount = RadarSound.Duration.Seconds;
         }
 
         public override void Update(GameTime gameTime)
@@ -144,6 +150,15 @@ namespace MissileCommand
                             TheSmartBomb.Spawn(new Vector3(Services.RandomMinMax(-400, 400), 550, 0));
                             TheSmartBomb.DefuseColor = TheEnemyColor;
                         }
+                    }
+                }
+
+                if (TheBomber.Active || TheSatalite.Active)
+                {
+                    if (RadarSoundTimer.Expired)
+                    {
+                        RadarSoundTimer.Reset();
+                        RadarSound.Play();
                     }
                 }
             }

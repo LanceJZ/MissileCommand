@@ -25,6 +25,8 @@ namespace MissileCommand.Entities
 
         Timer FireTimer;
 
+        SoundEffect NewWaveSound;
+
         MissileTarget[] TargetCities = new MissileTarget[6];
         MissileTarget[] TargetBases = new MissileTarget[3];
         MissileTarget[] TargetLand = new MissileTarget[5];
@@ -98,7 +100,7 @@ namespace MissileCommand.Entities
 
         public void LoadContent()
         {
-
+            NewWaveSound = PlayerRef.LoadSoundEffect("Start Game");
         }
 
         public void BeginRun()
@@ -121,7 +123,7 @@ namespace MissileCommand.Entities
                     minTime = 1;
 
                 FireTimer.Reset(Services.RandomMinMax(minTime, maxTime));
-                LounchMissile();
+                LaunchMissile();
             }
 
             if (Active)
@@ -193,6 +195,8 @@ namespace MissileCommand.Entities
 
         int[] ChoseCities()
         {
+            NewWaveSound.Play();
+
             int[] targetedCities = new int[3];
 
             for (int i = 0; i < 3; i++)
@@ -229,7 +233,7 @@ namespace MissileCommand.Entities
             return targetedCities;
         }
 
-        void LounchMissile()
+        void LaunchMissile()
         {
             if (LaunchedMissiles < MaxNumberOfMissiles + 4)
             {
