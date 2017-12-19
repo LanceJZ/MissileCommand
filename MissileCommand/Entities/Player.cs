@@ -55,6 +55,7 @@ namespace MissileCommand.Entities
         {
             DefuseColor = new Vector3(0.2f, 0.1f, 2.5f); // Reddish Blue
             Position.Z = 20;
+            Active = false;
 
             base.Initialize();
         }
@@ -75,10 +76,25 @@ namespace MissileCommand.Entities
 
         public override void Update(GameTime gameTime)
         {
-            GetInput();
-            MissileCollusion();
+            if (GameLogicRef.CurrentMode == GameState.InPlay)
+            {
+                GetInput();
+                MissileCollusion();
+            }
 
             base.Update(gameTime);
+        }
+
+        public void NewGame()
+        {
+            Position.X = 0;
+            Position.Y = 0;
+            Active = true;
+        }
+
+        public void GameOver()
+        {
+            Active = false;
         }
 
         void MissileCollusion()

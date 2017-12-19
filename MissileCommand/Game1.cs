@@ -104,8 +104,11 @@ namespace MissileCommand
 
             KeyboardState KBS = Keyboard.GetState();
 
-            if (!OldKeyState.IsKeyDown(Keys.P) && KBS.IsKeyDown(Keys.P))
-                PauseGame = !PauseGame;
+            if (TheGame.CurrentMode == GameState.InPlay)
+            {
+                if (!OldKeyState.IsKeyDown(Keys.P) && KBS.IsKeyDown(Keys.P))
+                    PauseGame = !PauseGame;
+            }
 
             OldKeyState = Keyboard.GetState();
 

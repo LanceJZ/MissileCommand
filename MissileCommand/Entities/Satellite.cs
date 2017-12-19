@@ -15,6 +15,8 @@ namespace MissileCommand.Entities
 
         Timer DropBombTimer;
 
+        SoundEffect ExplodeSound;
+
         public Timer DropTimer { get => DropBombTimer; }
 
         public Satellite(Game game, GameLogic gameLogic, float gameScale) : base(game)
@@ -38,6 +40,7 @@ namespace MissileCommand.Entities
         public override void LoadContent()
         {
             LoadModel("MC_Satalite");
+            LoadSoundEffect("Explosion");
         }
 
         public override void BeginRun()
@@ -64,17 +67,20 @@ namespace MissileCommand.Entities
                 if (Position.X > 650 || Position.X < -650)
                 {
                     Hit = true;
-                    GameLogicRef.SatatliteTimer.Reset(Services.RandomMinMax(10.0f, 20.0f));
+                    GameLogicRef.SatetlliteTimer.Reset(Services.RandomMinMax(10.0f, 20.0f));
                     return;
                 }
 
                 if (DropBombTimer.Expired)
                 {
-                    DropBombTimer.Reset(Services.RandomMinMax(20.0f, 30.0f));
-                    GameLogicRef.DropBombs(Position, 2);
+                    if (Position.X < 500 && Position.X > -500)
+                    {
+                        DropBombTimer.Reset(Services.RandomMinMax(20.0f, 30.0f));
+                        GameLogicRef.DropBombs(Position, 2);
+                    }
                 }
 
-                GameLogicRef.CheckCollusion(this, GameLogicRef.SatatliteTimer);
+                GameLogicRef.CheckCollusion(this, GameLogicRef.SatetlliteTimer);
             }
         }
 

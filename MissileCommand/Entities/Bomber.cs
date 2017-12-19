@@ -16,7 +16,6 @@ namespace MissileCommand.Entities
         Timer DropBombTimer;
         Timer AnimationTimer;
 
-        bool AnimationDone;
         bool AnimationStart;
 
         public Timer DropTimer { get => DropBombTimer; }
@@ -77,8 +76,11 @@ namespace MissileCommand.Entities
 
                 if (DropBombTimer.Expired)
                 {
-                    DropBombTimer.Reset(Services.RandomMinMax(20.0f, 30.0f));
-                    GameLogicRef.DropBombs(Position, 4);
+                    if (Position.X < 500 && Position.X > -500)
+                    {
+                        DropBombTimer.Reset(Services.RandomMinMax(20.0f, 30.0f));
+                        GameLogicRef.DropBombs(Position, 4);
+                    }
                 }
 
                 GameLogicRef.CheckCollusion(this, GameLogicRef.BomberTimer);
@@ -99,7 +101,6 @@ namespace MissileCommand.Entities
             Rotation.X = 0;
             RotationAcceleration.X = 0;
             RotationVelocity.X = 0;
-            AnimationDone = false;
             AnimationStart = false;
             MatrixUpdate();
         }

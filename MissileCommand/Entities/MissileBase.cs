@@ -12,6 +12,7 @@ namespace MissileCommand.Entities
     public class MissileBase : PositionedObject
     {
         Explosion Explode;
+        SoundEffect ExplodeSound;
         AModel[] TheMissiles = new AModel[10];
 
         public AModel[] Missiles { get => TheMissiles; }
@@ -46,6 +47,8 @@ namespace MissileCommand.Entities
             {
                 missile.LoadModel("MC_MissileAmmo");
             }
+
+            ExplodeSound = TheMissiles[0].LoadSoundEffect("Explosion");
         }
 
         public override void BeginRun()
@@ -93,6 +96,8 @@ namespace MissileCommand.Entities
                     spot++;
                 }
             }
+
+            Deativate();
         }
 
         public void Spawn(Vector3 color)
@@ -110,13 +115,18 @@ namespace MissileCommand.Entities
         {
             Active = false;
 
-            Explode.Spawn(Position);
-            Explode.MaxSize = 3;
-
             foreach (AModel missile in TheMissiles)
             {
                 missile.Active = false;
             }
+        }
+
+        public void HitByMissile()
+        {
+            ExplodeSound.Play();
+            Explode.Spawn(Position);
+            Explode.MaxSize = 3;
+            Deativate();
         }
     }
 }

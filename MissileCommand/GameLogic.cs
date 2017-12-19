@@ -10,6 +10,14 @@ using MissileCommand.Entities;
 
 namespace MissileCommand
 {
+    public enum GameState
+    {
+        Over,
+        InPlay,
+        HighScore,
+        Attract
+    };
+
     public class GameLogic : GameComponent, IBeginable, IUpdateableComponent, ILoadContent
     {
         float GameScale = 1.91f;
@@ -18,15 +26,14 @@ namespace MissileCommand
         EnemyMissileController TheMissiles;
         Player ThePlayer;
         Bomber TheBomber;
-        Satellite TheSatalite;
+        Satellite TheSatellite;
         SmartBomb TheSmartBomb;
-
-        Numbers TheScoreDisplay;
-        Words TheScoreText;
+        UI TheUI;
+        GameState GameMode = GameState.Attract;
 
         Timer FPSTimer;
         Timer BomberRunTimer;
-        Timer SataliteRunTimer;
+        Timer SatelliteRunTimer;
         Timer SmartBombRunTimer;
         Timer RadarSoundTimer;
 
@@ -39,13 +46,16 @@ namespace MissileCommand
 
         int Score;
 
+        public GameState CurrentMode { get => GameMode; }
         public Background BackgroundRef { get => TheBackground; }
         public Player PlayerRef { get => ThePlayer; }
         public EnemyMissileController MissilesRef { get => TheMissiles; }
         public Bomber BomberRef { get => TheBomber; }
+        public Satellite SatelliteRef { get => TheSatellite; }
         public Timer BomberTimer { get => BomberRunTimer; }
-        public Timer SatatliteTimer { get => SataliteRunTimer; }
+        public Timer SatetlliteTimer { get => SatelliteRunTimer; }
         public Timer SmartBombTimer { get => SmartBombRunTimer; }
+        public int GameScore { get => Score; }
 
         public GameLogic(Game game) : base(game)
         {
@@ -53,17 +63,15 @@ namespace MissileCommand
             ThePlayer = new Player(game, this, GameScale);
             TheMissiles = new EnemyMissileController(game, this, GameScale);
             TheBomber = new Bomber(game, this, GameScale);
-            TheSatalite = new Satellite(game, this, GameScale);
+            TheSatellite = new Satellite(game, this, GameScale);
             TheSmartBomb = new SmartBomb(game, this, GameScale);
+            TheUI = new UI(game, this, GameScale);
 
             FPSTimer = new Timer(game, 1);
             BomberRunTimer = new Timer(game);
-            SataliteRunTimer = new Timer(game);
+            SatelliteRunTimer = new Timer(game);
             SmartBombRunTimer = new Timer(game);
             RadarSoundTimer = new Timer(game);
-
-            TheScoreDisplay = new Numbers(game);
-            TheScoreText = new Words(game);
 
             // Screen resolution is 1200 X 900.
             // Y positive on top of window. So down is negative.
@@ -87,9 +95,6 @@ namespace MissileCommand
 
         public void BeginRun()
         {
-            TheScoreDisplay.ProcessNumber(0, new Vector3(-250, 400, 100), 2);
-            TheScoreText.ProcessWords("SCORE", new Vector3(-550, 400, 100), 2);
-
             RadarSoundTimer.Amount = RadarSound.Duration.Seconds;
         }
 
@@ -104,6 +109,67 @@ namespace MissileCommand
                 FPSFrames = 0;
             }
 
+            GameStateSwitch();
+
+            base.Update(gameTime);
+        }
+
+        public void ScoreUpdate(int score)
+        {
+            if (GameMode == GameState.InPlay)
+            {
+                int muliplier = (int)(TheMissiles.Wave / 2.1f) + 1;
+                Score += (score * muliplier);
+                TheUI.ScoreDisplay.UpdateNumber(Score);
+            }
+        }
+
+        public void GameOver()
+        {
+            MissilesRef.GameOver();
+            PlayerRef.GameOver();
+            BackgroundRef.GameOver();
+            TheBomber.Active = false;
+            TheSatellite.Active = false;
+            GameMode = GameState.Over;
+        }
+
+        void GameStateSwitch()
+        {
+            switch (GameMode)
+            {
+                case GameState.InPlay:
+                    GamePlay();
+                    break;
+                case GameState.Over:
+                    GameOver();
+                    break;
+                case GameState.Attract:
+                    MainMenu();
+                    break;
+                case GameState.HighScore:
+                    HighScore();
+                    break;
+            }
+        }
+
+        void MainMenu()
+        {
+
+        }
+
+        void HighScore()
+        {
+
+        }
+
+        void GamePlay()
+        {
+            BomberSatelliteControl();
+        }
+
+        void BomberSatelliteControl()
+        {
             if (MissilesRef.MissilesLaunched < MissilesRef.MaxMissiles)
             {
                 float spawnX;
@@ -128,14 +194,14 @@ namespace MissileCommand
                     }
                 }
 
-                if (SataliteRunTimer.Expired && TheMissiles.Wave > 1)
+                if (SatelliteRunTimer.Expired && TheMissiles.Wave > 1)
                 {
-                    SataliteRunTimer.Reset(Services.RandomMinMax(10.0f, 20.0f));
+                    SatelliteRunTimer.Reset(Services.RandomMinMax(10.0f, 20.0f));
 
                     if (Services.RandomMinMax(0, 100) > 25)
                     {
-                        if (!TheSatalite.Active)
-                            SataliteRun(spawnX);
+                        if (!TheSatellite.Active)
+                            SatelliteRun(spawnX);
                     }
                 }
 
@@ -152,8 +218,11 @@ namespace MissileCommand
                         }
                     }
                 }
+            }
 
-                if (TheBomber.Active || TheSatalite.Active)
+            if (GameMode == GameState.InPlay)
+            {
+                if (TheBomber.Active || TheSatellite.Active)
                 {
                     if (RadarSoundTimer.Expired)
                     {
@@ -162,17 +231,6 @@ namespace MissileCommand
                     }
                 }
             }
-
-            base.Update(gameTime);
-        }
-
-        public void ScoreUpdate(int score)
-        {
-            int muliplier = (int)(TheMissiles.Wave / 2.1f) + 1;
-
-            Score += (score * muliplier);
-
-            TheScoreDisplay.UpdateNumber(Score);
         }
 
         void BomberRun(float spawnX)
@@ -182,11 +240,11 @@ namespace MissileCommand
             TheBomber.DefuseColor = new Vector3(1, 0, 0);
         }
 
-        void SataliteRun(float spawnX)
+        void SatelliteRun(float spawnX)
         {
-            Spawn(new Vector3(spawnX, Services.RandomMinMax(300.0f, 400.0f), 0), TheSatalite, TheSatalite.DropTimer);
-            TheSatalite.Spawn();
-            TheSatalite.DefuseColor = new Vector3(1, 0, 0);
+            Spawn(new Vector3(spawnX, Services.RandomMinMax(300.0f, 400.0f), 0), TheSatellite, TheSatellite.DropTimer);
+            TheSatellite.Spawn();
+            TheSatellite.DefuseColor = new Vector3(1, 0, 0);
         }
 
         public void Spawn(Vector3 position, PositionedObject po, Timer timer)
@@ -235,5 +293,14 @@ namespace MissileCommand
             }
         }
 
+        public void NewGame()
+        {
+            Score = 0;
+            ScoreUpdate(0);
+            MissilesRef.NewGame();
+            PlayerRef.NewGame();
+            BackgroundRef.NewGame();
+            GameMode = GameState.InPlay;
+        }
     }
 }

@@ -75,6 +75,7 @@
     <Compile Include="Entities\Satellite.cs" />
     <Compile Include="Entities\SmartBomb.cs" />
     <Compile Include="Entities\TargetedMissile.cs" />
+    <Compile Include="Entities\UI.cs" />
     <Compile Include="Game1.cs" />
     <Compile Include="GameLogic.cs" />
     <Compile Include="Program.cs" />

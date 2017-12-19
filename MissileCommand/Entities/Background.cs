@@ -66,7 +66,7 @@ namespace MissileCommand.Entities
             {
                 city.ModelScale = new Vector3(GameScale);
                 city.Position.Y = Ground[0].Position.Y + (12 * GameScale) + (14f * GameScale);
-                city.DefuseColor = new Vector3(0.2f, 0.1f, 2.5f); // Reddish Blue
+                city.DefuseColor = new Vector3(0.2f, 0.1f, 2.8f); // Reddish Blue
             }
 
             TheCities[0].Position.X = -241 * GameScale;
@@ -81,7 +81,7 @@ namespace MissileCommand.Entities
             for (int i = 0; i < 3; i++)
             {
                 int bank = (i * 550) - 550;
-                BaseLocations[i].Spawn(new Vector3(0.2f, 0.1f, 2.5f));
+                //BaseLocations[i].Spawn(new Vector3(0.2f, 0.1f, 2.5f));
                 BaseLocations[i].Setup(new Vector3(bank, -400, 0));
             }
 
@@ -92,7 +92,7 @@ namespace MissileCommand.Entities
 
         public void BeginRun()
         {
-
+            GameOver();
         }
 
         public void LoadContent()
@@ -111,9 +111,38 @@ namespace MissileCommand.Entities
 
         public void IsCityHit()
         {
-            foreach(City city in TheCities)
+            foreach (City city in TheCities)
             {
 
+            }
+        }
+
+        public void NewWave(Vector3 defuseColor)
+        {
+            foreach (MissileBase silo in Bases)
+                silo.Spawn(defuseColor);
+        }
+
+        public void GameOver()
+        {
+            foreach (City city in Cities)
+            {
+                city.Active = false;
+            }
+
+            foreach (MissileBase silo in Bases)
+            {
+                silo.Deativate();
+            }
+        }
+
+        public void NewGame()
+        {
+            NewWave(new Vector3(0.2f, 0.1f, 2.8f));
+
+            foreach(City city in Cities)
+            {
+                city.Active = true;
             }
         }
     }

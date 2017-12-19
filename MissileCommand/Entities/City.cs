@@ -14,6 +14,7 @@ namespace MissileCommand.Entities
     public class City : Mod
     {
         Explosion Explode;
+        SoundEffect ExplodeSound;
 
         public City(Game game, float gameScale) : base(game)
         {
@@ -34,6 +35,7 @@ namespace MissileCommand.Entities
         public override void LoadContent()
         {
             LoadModel("MC_CityGS");
+            ExplodeSound = LoadSoundEffect("Explosion");
         }
 
         public override void BeginRun()
@@ -51,6 +53,7 @@ namespace MissileCommand.Entities
         public void Deactivate()
         {
             Active = false;
+            ExplodeSound.Play();
             Explode.Spawn(Position);
             Explode.MaxSize = 3;
         }
