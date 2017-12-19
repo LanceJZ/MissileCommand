@@ -9,12 +9,13 @@ using Engine;
 
 namespace MissileCommand.Entities
 {
-    using Mod = AModel;
-
-    public class City : Mod
+    public class City : AModel
     {
         Explosion Explode;
         SoundEffect ExplodeSound;
+
+        public float TargetMin;
+        public float TargetMax;
 
         public City(Game game, float gameScale) : base(game)
         {

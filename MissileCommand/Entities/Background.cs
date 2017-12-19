@@ -76,7 +76,13 @@ namespace MissileCommand.Entities
             TheCities[4].Position.X = 132 * GameScale;
             TheCities[5].Position.X = 214 * GameScale;
 
-            //City files are in this order. 0 = 2, 1 = 0, 2 = 4, 3, 4 = 1.
+            foreach (City city in TheCities)
+            {
+                city.TargetMin = city.Position.X - 20;
+                city.TargetMax = city.Position.X + 20;
+            }
+
+            //Land files are in this order. 0 = 2, 1 = 0, 2 = 4, 3, 4 = 1.
 
             for (int i = 0; i < 3; i++)
             {

@@ -27,7 +27,6 @@ namespace MissileCommand.Entities
 
         SoundEffect NewWaveSound;
 
-        MissileTarget[] TargetCities = new MissileTarget[6];
         MissileTarget[] TargetBases = new MissileTarget[3];
         MissileTarget[] TargetLand = new MissileTarget[5];
 
@@ -70,14 +69,6 @@ namespace MissileCommand.Entities
 
         public override void Initialize()
         {
-            foreach (City city in BackgroundRef.Cities)
-            {
-                int i = 0;
-                TargetCities[i].Min = city.Position.X - 20;
-                TargetCities[i].Max = city.Position.X + 20;
-                i++;
-            }
-
             for (int i = 0; i < 3; i++)
             {
                 float startX = BackgroundRef.Bases[i].Position.X;
@@ -186,8 +177,8 @@ namespace MissileCommand.Entities
         {
             if (Services.RandomMinMax(0.0f, 100.0f) > 50)
             {
-                return new Vector3(BackgroundRef.Cities[TargetedCities[Services.RandomMinMax(0, 2)]].Position.X,
-                    -400, 0);
+                return new Vector3(BackgroundRef.Cities[TargetedCities[Services.RandomMinMax(0,
+                    TargetedCities.Length - 1)]].Position.X, -400, 0);
             }
             else
             {
@@ -219,14 +210,26 @@ namespace MissileCommand.Entities
         {
             NewWaveSound.Play();
 
-            int[] targetedCities = new int[3];
+            int citiesLeft = 0;
+            int targetCities = 3;
 
-            for (int i = 0; i < 3; i++)
+            foreach (City city in GameLogicRef.BackgroundRef.Cities)
             {
-                targetedCities[i] = 6;
+                if (city.Active)
+                    citiesLeft++;
             }
 
-            for (int city = 0; city < 3; city++)
+            if (citiesLeft < 3)
+                targetCities = citiesLeft;
+
+            int[] targetedCities = new int[targetCities];
+
+            for (int i = 0; i < targetCities; i++)
+            {
+                targetedCities[i] = 0;
+            }
+
+            for (int city = 0; city < targetCities; city++)
             {
                 bool nextCity = false;
                 int cityTarget = 0;
@@ -236,11 +239,17 @@ namespace MissileCommand.Entities
                     nextCity = true;
                     cityTarget = Services.RandomMinMax(0, 5);
 
-                    for (int i = 0; i < 3; i++)
+                    for (int i = 0; i < targetCities; i++)
                     {
                         if (i != city)
                         {
                             if (cityTarget == targetedCities[i])
+                            {
+                                nextCity = false;
+                                break;
+                            }
+
+                            if (!BackgroundRef.Cities[cityTarget].Active)
                             {
                                 nextCity = false;
                                 break;

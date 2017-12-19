@@ -297,9 +297,9 @@ namespace MissileCommand
         {
             Score = 0;
             ScoreUpdate(0);
+            BackgroundRef.NewGame();
             MissilesRef.NewGame();
             PlayerRef.NewGame();
-            BackgroundRef.NewGame();
             GameMode = GameState.InPlay;
         }
     }
