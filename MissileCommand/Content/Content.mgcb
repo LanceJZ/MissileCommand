@@ -1131,3 +1131,9 @@
 /processorParam:Quality=Best
 /build:Sounds/Start Game.wav
 
+#begin Sounds/NewCityTune.wav
+/importer:WavImporter
+/processor:SoundEffectProcessor
+/processorParam:Quality=Best
+/build:Sounds/NewCityTune.wav
+

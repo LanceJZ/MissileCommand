@@ -108,7 +108,7 @@ namespace Engine
             }
         }
 
-        public void Draw(GameTime gametime)
+        public void Draw()
         {
             if (Active && Visable)
             {

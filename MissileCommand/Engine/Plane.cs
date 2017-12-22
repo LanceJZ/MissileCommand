@@ -60,7 +60,7 @@ namespace Engine
             S.GraphicsDM.GraphicsDevice.SetVertexBuffer(PlaneVertexBuffer);
         }
 
-        public void Draw(GameTime gametime)
+        public void Draw()
         {
             // Begin effect and draw for each frame
             foreach (EffectPass pass in PlaneBasicEffect.CurrentTechnique.Passes)

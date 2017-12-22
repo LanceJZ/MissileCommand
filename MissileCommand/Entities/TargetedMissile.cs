@@ -15,10 +15,9 @@ namespace MissileCommand.Entities
     {
         public Missile TheMissile;
 
-        public TargetedMissile(Game game, float gameScale) : base(game)
+        public TargetedMissile(Game game) : base(game)
         {
-            GameScale = gameScale;
-            TheMissile = new Missile(game, gameScale);
+            TheMissile = new Missile(game);
 
             LoadContent();
             BeginRun();

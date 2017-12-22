@@ -20,7 +20,7 @@ namespace MissileCommand.Entities
         public City(Game game, float gameScale) : base(game)
         {
             GameScale = gameScale;
-            Explode = new Explosion(game, gameScale);
+            Explode = new Explosion(game);
             Explode.Active = false;
         }
 

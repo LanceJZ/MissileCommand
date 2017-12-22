@@ -54,7 +54,7 @@ namespace Engine
             base.Update(gameTime);
         }
 
-        public void Draw(GameTime gameTime)
+        public void Draw()
         {
             if (Active)
             {

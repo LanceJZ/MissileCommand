@@ -18,10 +18,9 @@ namespace MissileCommand.Entities
         Vector3 OriginalTarget;
         Vector3 AvoidTarget;
 
-        public SmartBomb(Game game, GameLogic gameLogic, float gameScale) : base(game)
+        public SmartBomb(Game game, GameLogic gameLogic) : base(game)
         {
             GameLogicRef = gameLogic;
-            GameScale = gameScale;
             Radar = new PositionedObject(game);
 
             LoadContent();

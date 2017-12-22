@@ -14,13 +14,16 @@ namespace MissileCommand
     {
         Over,
         InPlay,
+        BonusPoints,
+        BonusCity,
+        BonusCityAwarded,
         HighScore,
         Attract
     };
 
     public class GameLogic : GameComponent, IBeginable, IUpdateableComponent, ILoadContent
     {
-        float GameScale = 1.91f;
+        float TheGameScale = 1.91f;
 
         Background TheBackground;
         EnemyMissileController TheMissiles;
@@ -28,23 +31,30 @@ namespace MissileCommand
         Bomber TheBomber;
         Satellite TheSatellite;
         SmartBomb TheSmartBomb;
-        UI TheUI;
+        UILogic TheUI;
+        List<City> OpenCities = new List<City>();
+        List<City> FilledCities = new List<City>();
+
         GameState GameMode = GameState.Attract;
 
-        Timer FPSTimer;
         Timer BomberRunTimer;
         Timer SatelliteRunTimer;
         Timer SmartBombRunTimer;
         Timer RadarSoundTimer;
+        Timer BonusCitySoundTimer;
 
         SoundEffect RadarSound;
+        SoundEffect NewCitySound;
 
         Vector3 TheEnemyColor = new Vector3(1, 0, 0);
         Vector3 ThePlayerColor = new Vector3(0.2f, 0.1f, 2.5f);
 
-        float FPSFrames = 0;
+        int Score = 0;
+        int NextNewCity = 0;
+        int NewCityAmount = 1000; //TODO: Normally 10000.
+        int NewCityCount = 0;
 
-        int Score;
+        bool BonusCityAwarded = false;
 
         public GameState CurrentMode { get => GameMode; }
         public Background BackgroundRef { get => TheBackground; }
@@ -55,23 +65,24 @@ namespace MissileCommand
         public Timer BomberTimer { get => BomberRunTimer; }
         public Timer SatetlliteTimer { get => SatelliteRunTimer; }
         public Timer SmartBombTimer { get => SmartBombRunTimer; }
+        public float GameScale { get => TheGameScale; }
         public int GameScore { get => Score; }
 
         public GameLogic(Game game) : base(game)
         {
-            TheBackground = new Background(game, GameScale);
-            ThePlayer = new Player(game, this, GameScale);
-            TheMissiles = new EnemyMissileController(game, this, GameScale);
-            TheBomber = new Bomber(game, this, GameScale);
-            TheSatellite = new Satellite(game, this, GameScale);
-            TheSmartBomb = new SmartBomb(game, this, GameScale);
-            TheUI = new UI(game, this, GameScale);
+            TheBackground = new Background(game, this);
+            ThePlayer = new Player(game, this);
+            TheMissiles = new EnemyMissileController(game, this);
+            TheBomber = new Bomber(game, this);
+            TheSatellite = new Satellite(game, this);
+            TheSmartBomb = new SmartBomb(game, this);
+            TheUI = new UILogic(game, this);
 
-            FPSTimer = new Timer(game, 1);
             BomberRunTimer = new Timer(game);
             SatelliteRunTimer = new Timer(game);
             SmartBombRunTimer = new Timer(game);
             RadarSoundTimer = new Timer(game);
+            BonusCitySoundTimer = new Timer(game);
 
             // Screen resolution is 1200 X 900.
             // Y positive on top of window. So down is negative.
@@ -90,25 +101,18 @@ namespace MissileCommand
 
         public void LoadContent()
         {
-            RadarSound = PlayerRef.LoadSoundEffect("Radar");
+            RadarSound = Services.LoadSoundEffect("Radar");
+            NewCitySound = Services.LoadSoundEffect("NewCityTune");
         }
 
         public void BeginRun()
         {
-            RadarSoundTimer.Amount = RadarSound.Duration.Seconds;
+            RadarSoundTimer.Amount = (float)RadarSound.Duration.TotalSeconds;
+            BonusCitySoundTimer.Amount = (float)NewCitySound.Duration.TotalSeconds;
         }
 
         public override void Update(GameTime gameTime)
         {
-            FPSFrames++;
-
-            if(FPSTimer.Expired)
-            {
-                FPSTimer.Reset();
-                System.Diagnostics.Debug.WriteLine(FPSFrames.ToString());
-                FPSFrames = 0;
-            }
-
             GameStateSwitch();
 
             base.Update(gameTime);
@@ -116,12 +120,9 @@ namespace MissileCommand
 
         public void ScoreUpdate(int score)
         {
-            if (GameMode == GameState.InPlay)
-            {
-                int muliplier = (int)(TheMissiles.Wave / 2.1f) + 1;
-                Score += (score * muliplier);
-                TheUI.ScoreDisplay.UpdateNumber(Score);
-            }
+            int muliplier = (int)(TheMissiles.Wave / 2.1f) + 1;
+            Score += (score * muliplier);
+            TheUI.ScoreDisplay.UpdateNumber(Score);
         }
 
         public void GameOver()
@@ -134,12 +135,67 @@ namespace MissileCommand
             GameMode = GameState.Over;
         }
 
+        public void Bonus()
+        {
+            foreach (Explosion explode in PlayerRef.Explosions)
+            {
+                if (explode.Active)
+                    return;
+            }
+
+            GameMode = GameState.BonusPoints;
+
+            int missileCount = 0;
+            int cityCount = 0;
+
+            foreach (MissileBase silo in BackgroundRef.Bases)
+            {
+                foreach (AModel acm in silo.Missiles)
+                {
+                    if (acm.Active)
+                    {
+                        //GameLogicRef.ScoreUpdate(25);
+                        missileCount++;
+                    }
+
+                    acm.Active = false;
+                }
+            }
+
+            foreach (City city in BackgroundRef.Cities)
+            {
+                if (city.Active)
+                {
+                    //GameLogicRef.ScoreUpdate(100);
+                    FilledCities.Add(city);
+                    cityCount++;
+                }
+                else
+                {
+                    OpenCities.Add(city);
+                }
+
+                city.Active = false;
+            }
+
+            TheUI.WaveComplete.Bonus(missileCount, cityCount);
+        }
+
         void GameStateSwitch()
         {
             switch (GameMode)
             {
                 case GameState.InPlay:
                     GamePlay();
+                    break;
+                case GameState.BonusPoints:
+                    BonusPoints();
+                    break;
+                case GameState.BonusCity:
+                    BonusCity();
+                    break;
+                case GameState.BonusCityAwarded:
+                    BonusCityAward();
                     break;
                 case GameState.Over:
                     GameOver();
@@ -151,6 +207,100 @@ namespace MissileCommand
                     HighScore();
                     break;
             }
+        }
+
+        void BonusPoints()
+        {
+            if (TheUI.WaveComplete.Done)
+            {
+                GameMode = GameState.BonusCity;
+            }
+        }
+
+        void BonusCityAward()
+        {
+            if (!BonusCityAwarded)
+            {
+                BonusCityAwarded = true;
+                NewCitySound.Play();
+                TheUI.WaveComplete.BonusCity.ShowWords(true);
+                BonusCitySoundTimer.Reset();
+            }
+
+            if (BonusCitySoundTimer.Expired)
+            {
+                TheUI.WaveComplete.BonusCity.ShowWords(false);
+                BackgroundRef.NewWave(PlayerRef.DefuseColor);
+                MissilesRef.NewWave();
+                GameMode = GameState.InPlay;
+            }
+        }
+
+        void BonusCity() //TODO: FIx this.
+        {
+            bool newCityAwarded = false;
+
+            if (GameScore > NextNewCity)
+            {
+                NextNewCity += NewCityAmount;
+                NewCityCount++;
+                newCityAwarded = true;
+            }
+
+            if (OpenCities.Count > 5 && NewCityCount < 1)
+            {
+                GameOver();
+                OpenCities.Clear();
+                FilledCities.Clear();
+                return;
+            }
+
+            if (NewCityCount + OpenCities.Count > 5)
+            {
+                foreach (City city in BackgroundRef.Cities)
+                {
+                    city.Active = true;
+                }
+
+                System.Diagnostics.Debug.WriteLine("New City Count " + NewCityCount.ToString());
+                System.Diagnostics.Debug.WriteLine("Open Cities Count " + OpenCities.Count.ToString());
+                NewCityCount -= 5 - OpenCities.Count;
+                System.Diagnostics.Debug.WriteLine("New City Count Adjusted " + NewCityCount.ToString());
+                OpenCities.Clear();
+                FilledCities.Clear();
+                GameMode = GameState.InPlay;
+                return;
+            }
+
+            foreach (City city in FilledCities)
+            {
+                city.Active = true;
+            }
+
+            FilledCities.Clear();
+
+            for (int i = 0; i < OpenCities.Count; i++)
+            {
+                if (NewCityCount > 0)
+                {
+                    int newCity = Services.RandomMinMax(0, OpenCities.Count - 1);
+                    OpenCities[newCity].Active = true;
+                    OpenCities.RemoveAt(newCity);
+                    NewCityCount--;
+                }
+            }
+
+            OpenCities.Clear();
+
+            if (newCityAwarded)
+            {
+                GameMode = GameState.BonusCityAwarded;
+                return;
+            }
+
+            BackgroundRef.NewWave(PlayerRef.DefuseColor);
+            MissilesRef.NewWave();
+            GameMode = GameState.InPlay;
         }
 
         void MainMenu()
@@ -220,15 +370,12 @@ namespace MissileCommand
                 }
             }
 
-            if (GameMode == GameState.InPlay)
+            if (TheBomber.Active || TheSatellite.Active)
             {
-                if (TheBomber.Active || TheSatellite.Active)
+                if (RadarSoundTimer.Expired)
                 {
-                    if (RadarSoundTimer.Expired)
-                    {
-                        RadarSoundTimer.Reset();
-                        RadarSound.Play();
-                    }
+                    RadarSoundTimer.Reset();
+                    RadarSound.Play();
                 }
             }
         }
@@ -296,6 +443,8 @@ namespace MissileCommand
         public void NewGame()
         {
             Score = 0;
+            NewCityCount = 0;
+            NextNewCity = NewCityAmount;
             ScoreUpdate(0);
             BackgroundRef.NewGame();
             MissilesRef.NewGame();

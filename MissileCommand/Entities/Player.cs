@@ -35,11 +35,10 @@ namespace MissileCommand.Entities
 
         public List<Explosion> Explosions { get => TheExplosions; }
 
-        public Player(Game game, GameLogic gameLogic, float gameScale) : base(game)
+        public Player(Game game, GameLogic gameLogic) : base(game)
         {
             BackgroundRef = gameLogic.BackgroundRef;
             GameLogicRef = gameLogic;
-            GameScale = gameScale;
             TheMissiles = new List<TargetedMissile>();
             TheExplosions = new List<Explosion>();
 
@@ -208,7 +207,7 @@ namespace MissileCommand.Entities
 
             if (spawnNew)
             {
-                TheMissiles.Add(new TargetedMissile(Game, GameScale));
+                TheMissiles.Add(new TargetedMissile(Game));
             }
 
             TheMissiles[freeOne].Spawn(basePos, Position);
@@ -233,7 +232,7 @@ namespace MissileCommand.Entities
 
             if (spawnNew)
             {
-                TheExplosions.Add(new Explosion(Game, GameScale));
+                TheExplosions.Add(new Explosion(Game));
             }
 
             TheExplosions[freeOne].Spawn(position);

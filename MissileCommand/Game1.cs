@@ -17,6 +17,9 @@ namespace MissileCommand
         SpriteBatch spriteBatch;
         GameLogic TheGame;
 
+        Timer FPSTimer;
+        float FPSFrames = 0;
+
         KeyboardState OldKeyState;
         bool PauseGame = false;
 
@@ -24,7 +27,7 @@ namespace MissileCommand
         {
             Graphics = new GraphicsDeviceManager(this);
             Graphics.IsFullScreen = false;
-            Graphics.SynchronizeWithVerticalRetrace = true;
+            Graphics.SynchronizeWithVerticalRetrace = false; //When true, 60FSP refresh rate locked.
             Graphics.GraphicsProfile = GraphicsProfile.HiDef;
             Graphics.PreferredBackBufferWidth = 1200;
             Graphics.PreferredBackBufferHeight = 900;
@@ -32,10 +35,12 @@ namespace MissileCommand
             Graphics.PreparingDeviceSettings += SetMultiSampling;
             Graphics.ApplyChanges();
             Graphics.GraphicsDevice.RasterizerState = new RasterizerState(); //Must be after Apply Changes.
+            GameServices.TheGame = this;
             IsFixedTimeStep = false;
             Content.RootDirectory = "Content";
 
             TheGame = new GameLogic(this);
+            FPSTimer = new Timer(this, 1);
         }
 
         private void SetMultiSampling(object sender, PreparingDeviceSettingsEventArgs eventArgs)
@@ -114,6 +119,15 @@ namespace MissileCommand
 
             if (!PauseGame)
                 base.Update(gameTime);
+
+            FPSFrames++;
+
+            if (FPSTimer.Expired)
+            {
+                FPSTimer.Reset();
+                System.Diagnostics.Debug.WriteLine(FPSFrames.ToString());
+                FPSFrames = 0;
+            }
         }
 
         /// <summary>

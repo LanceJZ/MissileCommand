@@ -10,12 +10,10 @@ using Engine;
 
 namespace Engine
 {
-    using Mod = Engine.AModel;
-
-    class Words : GameComponent, IUpdateableComponent, ILoadContent, IBeginable
+    public class Words : GameComponent, IUpdateableComponent, ILoadContent, IBeginable
     {
         XnaModel[] WordModels = new XnaModel[27];
-        List<Mod> WordEs = new List<Mod>();
+        List<Engine.AModel> WordEs = new List<Engine.AModel>();
         float Scale;
         int TextSize;
         public Vector3 Position = Vector3.Zero;
@@ -73,7 +71,7 @@ namespace Engine
 
                     if (letval > -1 && letval < 27)
                     {
-                        Mod letterE = InitiateLetter(letval);
+                        Engine.AModel letterE = InitiateLetter(letval);
                         letterE.Scale = Scale;
                     }
 
@@ -81,7 +79,7 @@ namespace Engine
 
                 if ((int)letter == 32)
                 {
-                    WordEs.Add(new Mod(Game));
+                    WordEs.Add(new Engine.AModel(Game));
                 }
             }
 
@@ -92,7 +90,7 @@ namespace Engine
         {
             float space = 0;
 
-            foreach (Mod letter in WordEs)
+            foreach (Engine.AModel letter in WordEs)
             {
                 letter.Position = Position - new Vector3(space, 0, 0);
                 letter.MatrixUpdate();
@@ -100,9 +98,9 @@ namespace Engine
             }
         }
 
-        Mod InitiateLetter(int letter)
+        Engine.AModel InitiateLetter(int letter)
         {
-            Mod letterModel = new Mod(Game);
+            Engine.AModel letterModel = new Engine.AModel(Game);
             letterModel.SetModel(WordModels[letter]);
             letterModel.Moveable = false;
             letterModel.ModelScale = new Vector3(Scale);
@@ -114,7 +112,7 @@ namespace Engine
 
         public void DeleteWords()
         {
-            foreach (Mod word in WordEs)
+            foreach (Engine.AModel word in WordEs)
             {
                 word.Destroy();
             }
@@ -126,7 +124,7 @@ namespace Engine
         {
             if (WordEs != null)
             {
-                foreach (Mod word in WordEs)
+                foreach (Engine.AModel word in WordEs)
                 {
                     word.Active = show;
                     word.Visable = show;

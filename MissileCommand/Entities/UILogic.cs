@@ -9,10 +9,11 @@ using Engine;
 
 namespace MissileCommand.Entities
 {
-    public class UI : GameComponent, IBeginable, IUpdateableComponent, ILoadContent
+    public class UILogic : GameComponent, IBeginable, IUpdateableComponent, ILoadContent
     {
+        WaveCompleteUI TheWaveComplete;
+        HighScoresUI TheHighScores;
         GameLogic GameLogicRef;
-        float GameScale;
 
         Numbers TheScoreDisplay;
         Words TheScoreText;
@@ -22,17 +23,24 @@ namespace MissileCommand.Entities
         KeyboardState OldKeyState;
 
         public Numbers ScoreDisplay { get => TheScoreDisplay; }
+        public WaveCompleteUI WaveComplete { get => TheWaveComplete; }
+        public HighScoresUI HighScores {  get => TheHighScores;}
 
-        public UI(Game game, GameLogic gameLogic, float gameScale) : base(game)
+        public UILogic(Game game, GameLogic gameLogic) : base(game)
         {
-            GameScale = gameScale;
             GameLogicRef = gameLogic;
 
+            TheHighScores = new HighScoresUI(game, gameLogic);
+            TheWaveComplete = new WaveCompleteUI(game, gameLogic);
             TheScoreDisplay = new Numbers(game);
             TheScoreText = new Words(game);
             TheGameOverText = new Words(game);
             TheStartANewGameText = new Words(game);
 
+            // Screen resolution is 1200 X 900.
+            // Y positive on top of window. So down is negative.
+            // X positive is right of window. So to the left is negative.
+            // Z positive is towards the front. So to place objects behind other objects, put them in the negative.
             game.Components.Add(this);
         }
 
@@ -54,7 +62,7 @@ namespace MissileCommand.Entities
             TheScoreDisplay.ProcessNumber(0, new Vector3(-250, 400, 100), 2);
             TheScoreText.ProcessWords("SCORE", new Vector3(-550, 400, 100), 2);
             TheGameOverText.ProcessWords("GAME OVER", new Vector3(-160, 100, 100), 4);
-            TheStartANewGameText.ProcessWords("PRESS ENTER TO START GAME", new Vector3(-120, 0, 100), 1);
+            TheStartANewGameText.ProcessWords("PRESS ENTER TO START GAME", new Vector3(-125, 0, 100), 1);
         }
 
         public override void Update(GameTime gameTime)
@@ -76,6 +84,9 @@ namespace MissileCommand.Entities
                 case GameState.InPlay:
                     GamePlay();
                     break;
+                case GameState.BonusPoints:
+                    Bonus();
+                    break;
                 case GameState.Over:
                     GameOver();
                     break;
@@ -83,6 +94,11 @@ namespace MissileCommand.Entities
                     HighScore();
                     break;
             }
+        }
+
+        void Bonus()
+        {
+
         }
 
         void Attract()

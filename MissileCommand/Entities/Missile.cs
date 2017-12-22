@@ -33,11 +33,10 @@ namespace MissileCommand.Entities
             set => Trail.DefuseColor = value;
         }
 
-        public Missile(Game game, GameLogic gameLogic, float gameScale) : base(game)
+        public Missile(Game game, GameLogic gameLogic) : base(game)
         {
             EMC = gameLogic.MissilesRef;
             GameLogicRef = gameLogic;
-            GameScale = gameScale;
             Trail = new AModel(game);
             TrailTimer = new Timer(game, 0.2666f);
             SplitTimer = new Timer(game);
@@ -49,9 +48,8 @@ namespace MissileCommand.Entities
             // X Positive is on the right of the window.
         }
 
-        public Missile(Game game, float gameScale) : base(game)
+        public Missile(Game game) : base(game)
         {
-            GameScale = gameScale;
             Trail = new AModel(game);
             TrailTimer = new Timer(game, 0.2666f);
             SplitTimer = new Timer(game);

@@ -20,9 +20,8 @@ namespace MissileCommand.Entities
 
         public float MaxSize { set => TheMaxSize = value; }
 
-        public Explosion(Game game, float gameScale) : base(game)
+        public Explosion(Game game) : base(game)
         {
-            GameScale = gameScale;
             BlinkTimer = new Timer(game, 0.1f);
 
             LoadContent();

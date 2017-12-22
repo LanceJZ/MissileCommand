@@ -18,11 +18,9 @@ namespace MissileCommand.Entities
         public AModel[] Missiles { get => TheMissiles; }
 
 
-        public MissileBase(Game game, float gameScale) : base(game)
+        public MissileBase(Game game) : base(game)
         {
-            GameScale = gameScale;
-
-            Explode = new Explosion(game, gameScale);
+            Explode = new Explosion(game);
             Explode.Active = false;
 
             for (int i = 0; i < 10; i++)
@@ -48,7 +46,7 @@ namespace MissileCommand.Entities
                 missile.LoadModel("MC_MissileAmmo");
             }
 
-            ExplodeSound = TheMissiles[0].LoadSoundEffect("Explosion");
+            ExplodeSound = Services.LoadSoundEffect("Explosion");
         }
 
         public override void BeginRun()

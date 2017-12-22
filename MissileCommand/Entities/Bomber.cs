@@ -20,11 +20,9 @@ namespace MissileCommand.Entities
 
         public Timer DropTimer { get => DropBombTimer; }
 
-        public Bomber(Game game, GameLogic gameLogic, float gameScale) : base(game)
+        public Bomber(Game game, GameLogic gameLogic) : base(game)
         {
             GameLogicRef = gameLogic;
-            GameScale = gameScale;
-
             DropBombTimer = new Timer(game);
             AnimationTimer = new Timer(game);
 

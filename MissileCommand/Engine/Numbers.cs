@@ -10,12 +10,10 @@ using Engine;
 
 namespace Engine
 {
-    using Mod = Engine.AModel;
-
     public class Numbers : GameComponent, IUpdateableComponent, ILoadContent, IBeginable
     {
         XnaModel[] NumberModels = new XnaModel[10];
-        List<Mod> NumberEs = new List<Mod>();
+        List<Engine.AModel> NumberEs = new List<Engine.AModel>();
         public Vector3 Position = Vector3.Zero;
         float Scale;
 
@@ -63,7 +61,7 @@ namespace Engine
                 //Make digit the modulus of 10 from number.
                 int digit = numberIn % 10;
                 //This sends a digit to the draw function with the location and size.
-                Mod numberE = InitiateNumber(digit);
+                Engine.AModel numberE = InitiateNumber(digit);
                 numberE.Scale = Scale;
                 // Dividing the int by 10, we discard the digit that was derived from the modulus operation.
                 numberIn /= 10;
@@ -78,7 +76,7 @@ namespace Engine
         {
             float space = 0;
 
-            foreach(Mod number in NumberEs)
+            foreach(Engine.AModel number in NumberEs)
             {
                 number.Position = Position - new Vector3(space, 0, 0);
                 number.MatrixUpdate();
@@ -90,16 +88,16 @@ namespace Engine
         {
             if (NumberEs != null)
             {
-                foreach (Mod number in NumberEs)
+                foreach (Engine.AModel number in NumberEs)
                 {
                     number.Active = show;
                 }
             }
         }
 
-        Mod InitiateNumber(int number)
+        Engine.AModel InitiateNumber(int number)
         {
-            Mod digit = new Mod(Game);
+            Engine.AModel digit = new Engine.AModel(Game);
 
             if (number < 0)
                 number = 0;
@@ -113,14 +111,14 @@ namespace Engine
             return NumberEs.Last();
         }
 
-        void RemoveNumber(Mod numberE)
+        void RemoveNumber(Engine.AModel numberE)
         {
             NumberEs.Remove(numberE);
         }
 
         void ClearNumbers()
         {
-            foreach(Mod digit in NumberEs)
+            foreach(Engine.AModel digit in NumberEs)
             {
                 digit.Destroy();
             }

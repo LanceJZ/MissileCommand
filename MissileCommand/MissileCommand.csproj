@@ -67,6 +67,7 @@
     <Compile Include="Entities\Background.cs" />
     <Compile Include="Entities\Bomber.cs" />
     <Compile Include="Entities\City.cs" />
+    <Compile Include="Entities\HighScoresUI.cs" />
     <Compile Include="Entities\MissileBase.cs" />
     <Compile Include="Entities\Explosion.cs" />
     <Compile Include="Entities\Missile.cs" />
@@ -75,7 +76,8 @@
     <Compile Include="Entities\Satellite.cs" />
     <Compile Include="Entities\SmartBomb.cs" />
     <Compile Include="Entities\TargetedMissile.cs" />
-    <Compile Include="Entities\UI.cs" />
+    <Compile Include="Entities\UILogic.cs" />
+    <Compile Include="Entities\WaveCompleteUI.cs" />
     <Compile Include="Game1.cs" />
     <Compile Include="GameLogic.cs" />
     <Compile Include="Program.cs" />

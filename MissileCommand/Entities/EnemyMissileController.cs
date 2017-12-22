@@ -34,14 +34,10 @@ namespace MissileCommand.Entities
 
         Vector3 TheColor = new Vector3(1, 0, 0);
 
-        float GameScale;
         int MaxNumberOfMissiles = 0;
         int LaunchedMissiles = 0;
         int TheMissileSpeed = 20;
         int TheWave = 0;
-        int NextNewCity = 0;
-        int NewCityAmount = 10000;
-        int NewCityCount = 0;
 
         bool Active = true;
 
@@ -51,9 +47,8 @@ namespace MissileCommand.Entities
         public int MaxMissiles { get => MaxNumberOfMissiles; }
         public int Wave { get => TheWave; }
 
-        public EnemyMissileController(Game game, GameLogic gameLogic, float gameScale) : base(game)
+        public EnemyMissileController(Game game, GameLogic gameLogic) : base(game)
         {
-            GameScale = gameScale;
             TheMissiles = new List<Missile>();
             GameLogicRef = gameLogic;
             BackgroundRef = gameLogic.BackgroundRef;
@@ -94,7 +89,7 @@ namespace MissileCommand.Entities
 
         public void LoadContent()
         {
-            NewWaveSound = PlayerRef.LoadSoundEffect("Start Game");
+            NewWaveSound = Services.LoadSoundEffect("Start Game");
         }
 
         public void BeginRun()
@@ -146,7 +141,7 @@ namespace MissileCommand.Entities
 
             if (spawnNew)
             {
-                TheMissiles.Add(new Missile(Game, GameLogicRef, GameScale));
+                TheMissiles.Add(new Missile(Game, GameLogicRef));
             }
 
             TheMissiles[freeOne].Spawn(position, target, speed);
@@ -191,8 +186,6 @@ namespace MissileCommand.Entities
         public void NewGame()
         {
             TheWave = 0;
-            NewCityCount = 0;
-            NextNewCity = NewCityAmount;
             TheMissileSpeed = 20;
             MaxNumberOfMissiles = 10;
             TargetedCities = ChoseCities();
@@ -204,6 +197,16 @@ namespace MissileCommand.Entities
             {
                 missile.Active = false;
             }
+        }
+
+        public void NewWave()
+        {
+            PlayerRef.Active = true;
+            TargetedCities = ChoseCities();
+            TheMissileSpeed += 3;
+            MaxNumberOfMissiles += 2;
+            TheWave++;
+            FireTimer.Reset(NewWaveSound.Duration.Seconds);
         }
 
         int[] ChoseCities()
@@ -289,71 +292,14 @@ namespace MissileCommand.Entities
                 if (CheckForActiveMissiles())
                 {
                     LaunchedMissiles = 0;
-                    GameLogicRef.BomberTimer.Reset(15);
-                    GameLogicRef.SatetlliteTimer.Reset(12);
+                    PlayerRef.Active = false;
+
+                    //GameLogicRef.BomberTimer.Reset(15);
+                    //GameLogicRef.SatetlliteTimer.Reset(12);
 
                     //System.Diagnostics.Debug.WriteLine("Wave: " + TheWave.ToString());
 
-                    foreach (MissileBase silo in GameLogicRef.BackgroundRef.Bases)
-                    {
-                        foreach (AModel acm in silo.Missiles)
-                        {
-                            if (acm.Active)
-                                GameLogicRef.ScoreUpdate(25);
-                        }
-                    }
-
-                    GameLogicRef.BackgroundRef.NewWave(new Vector3(0.2f, 0.1f, 2.5f));
-
-                    List<City> openCities = new List<City>();
-
-                    foreach (City city in GameLogicRef.BackgroundRef.Cities)
-                    {
-                        if (city.Active)
-                        {
-                            GameLogicRef.ScoreUpdate(100);
-                        }
-                        else
-                        {
-                            openCities.Add(city);
-                        }
-                    }
-
-                    if (GameLogicRef.GameScore > NextNewCity)
-                    {
-                        NextNewCity += NewCityAmount;
-                        NewCityCount++;
-                    }
-
-                    if (openCities.Count > 5 && NewCityCount < 1)
-                    {
-                        GameLogicRef.GameOver();
-                        return;
-                    }
-
-                    for (int i = 0; i < openCities.Count; i++)
-                    {
-                        if (NewCityCount > 0)
-                        {
-                            openCities[Services.RandomMinMax(0, openCities.Count - 1)].Active = true;
-                            NewCityCount--;
-                            openCities.Clear();
-
-                            foreach (City city in GameLogicRef.BackgroundRef.Cities)
-                            {
-                                if (!city.Active)
-                                {
-                                    openCities.Add(city);
-                                }
-                            }
-                        }
-                    }
-
-                    TargetedCities = ChoseCities();
-                    TheMissileSpeed += 3;
-                    MaxNumberOfMissiles += 2;
-                    TheWave++;
-                    FireTimer.Reset(NewWaveSound.Duration.Seconds);
+                    GameLogicRef.Bonus();
                 }
             }
         }

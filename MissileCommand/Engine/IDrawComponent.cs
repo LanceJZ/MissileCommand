@@ -4,6 +4,6 @@ namespace Engine
 {
     public interface IDrawComponent
     {
-        void Draw(GameTime gametime);
+        void Draw();
     }
 }

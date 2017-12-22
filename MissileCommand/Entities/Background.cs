@@ -11,22 +11,21 @@ namespace MissileCommand.Entities
 {
     public class Background : GameComponent, IBeginable, IUpdateableComponent, ILoadContent
     {
+        GameLogic GameLogicRef;
         AModel[] Ground = new AModel[5];
         City[] TheCities = new City[6];
         MissileBase[] BaseLocations = new MissileBase[3];
 
-        float GameScale;
-
         public City[] Cities { get => TheCities; }
         public MissileBase[] Bases { get => BaseLocations; }
 
-        public Background(Game game, float gameScale) : base(game)
+        public Background(Game game, GameLogic gameLogic) : base(game)
         {
-            GameScale = gameScale;
+            GameLogicRef = gameLogic;
 
             for (int ii = 0; ii < 3; ii++)
             {
-                BaseLocations[ii] = new MissileBase(game, gameScale);
+                BaseLocations[ii] = new MissileBase(game);
             }
 
             for (int i = 0; i < Ground.Length; i++)
@@ -37,7 +36,7 @@ namespace MissileCommand.Entities
 
             for (int i = 0; i < TheCities.Length; i++)
             {
-                Cities[i] = new City(game, GameScale);
+                Cities[i] = new City(game, GameLogicRef.GameScale);
             }
 
             game.Components.Add(this);
@@ -49,32 +48,33 @@ namespace MissileCommand.Entities
 
         public override void Initialize()
         {
-            float posX = -(253 * GameScale);
+            float posX = -(253 * GameLogicRef.GameScale);
 
             foreach (AModel plot in Ground)
             {
-                plot.ModelScale = new Vector3(GameScale);
+                plot.ModelScale = new Vector3(GameLogicRef.GameScale);
                 plot.Position.Z = -10;
                 plot.Position.Y = (-Services.WindowHeight / 2);
                 plot.Position.X = posX;
                 plot.Moveable = false;
                 plot.DefuseColor = new Vector3(1, 1, 0); //Yellow
-                posX += (126 * GameScale);
+                posX += (126 * GameLogicRef.GameScale);
             }
 
             foreach (City city in TheCities)
             {
-                city.ModelScale = new Vector3(GameScale);
-                city.Position.Y = Ground[0].Position.Y + (12 * GameScale) + (14f * GameScale);
+                city.ModelScale = new Vector3(GameLogicRef.GameScale);
+                city.Position.Y = Ground[0].Position.Y + (12 * GameLogicRef.GameScale)
+                    + (14f * GameLogicRef.GameScale);
                 city.DefuseColor = new Vector3(0.2f, 0.1f, 2.8f); // Reddish Blue
             }
 
-            TheCities[0].Position.X = -241 * GameScale;
-            TheCities[1].Position.X = -130 * GameScale;
-            TheCities[2].Position.X = -54 * GameScale;
-            TheCities[3].Position.X = 52 * GameScale;
-            TheCities[4].Position.X = 132 * GameScale;
-            TheCities[5].Position.X = 214 * GameScale;
+            TheCities[0].Position.X = -241 * GameLogicRef.GameScale;
+            TheCities[1].Position.X = -130 * GameLogicRef.GameScale;
+            TheCities[2].Position.X = -54 * GameLogicRef.GameScale;
+            TheCities[3].Position.X = 52 * GameLogicRef.GameScale;
+            TheCities[4].Position.X = 132 * GameLogicRef.GameScale;
+            TheCities[5].Position.X = 214 * GameLogicRef.GameScale;
 
             foreach (City city in TheCities)
             {
@@ -87,7 +87,6 @@ namespace MissileCommand.Entities
             for (int i = 0; i < 3; i++)
             {
                 int bank = (i * 550) - 550;
-                //BaseLocations[i].Spawn(new Vector3(0.2f, 0.1f, 2.5f));
                 BaseLocations[i].Setup(new Vector3(bank, -400, 0));
             }
 
@@ -113,14 +112,6 @@ namespace MissileCommand.Entities
         {
 
             base.Update(gameTime);
-        }
-
-        public void IsCityHit()
-        {
-            foreach (City city in TheCities)
-            {
-
-            }
         }
 
         public void NewWave(Vector3 defuseColor)
