@@ -123,7 +123,6 @@ namespace MissileCommand.Entities
             switch (GameLogicRef.CurrentMode)
             {
                 case GameState.BonusPoints:
-                case GameState.BonusCityAwarded:
                     switch (Currentmode)
                     {
                         case WaveMode.CountMissiles:

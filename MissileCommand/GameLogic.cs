@@ -146,7 +146,7 @@ namespace MissileCommand
                     return;
             }
 
-            GameMode = GameState.BonusCity;
+            GameMode = GameState.BonusPoints;
 
             int missileCount = 0;
             int cityCount = 0;
@@ -237,7 +237,7 @@ namespace MissileCommand
         {
             if (TheUI.WaveComplete.Done)
             {
-                NewWave();
+                GameMode = GameState.BonusCity;
             }
         }
 
@@ -301,7 +301,7 @@ namespace MissileCommand
                 return;
             }
 
-            GameMode = GameState.BonusPoints;
+            NewWave();
         }
 
         void MainMenu()
