@@ -14,6 +14,7 @@ namespace MissileCommand
     {
         Over,
         InPlay,
+        Bonus,
         BonusPoints,
         BonusCity,
         BonusCityAwarded,
@@ -108,7 +109,7 @@ namespace MissileCommand
         public void BeginRun()
         {
             RadarSoundTimer.Amount = (float)RadarSound.Duration.TotalSeconds;
-            BonusCitySoundTimer.Amount = (float)NewCitySound.Duration.TotalSeconds;
+            BonusCitySoundTimer.Amount = (float)NewCitySound.Duration.TotalSeconds + 1;
         }
 
         public override void Update(GameTime gameTime)
@@ -137,13 +138,15 @@ namespace MissileCommand
 
         public void Bonus()
         {
+            GameMode = GameState.Bonus;
+
             foreach (Explosion explode in PlayerRef.Explosions)
             {
                 if (explode.Active)
                     return;
             }
 
-            GameMode = GameState.BonusPoints;
+            GameMode = GameState.BonusCity;
 
             int missileCount = 0;
             int cityCount = 0;
@@ -188,6 +191,9 @@ namespace MissileCommand
                 case GameState.InPlay:
                     GamePlay();
                     break;
+                case GameState.Bonus:
+                    Bonus();
+                    break;
                 case GameState.BonusPoints:
                     BonusPoints();
                     break;
@@ -209,16 +215,39 @@ namespace MissileCommand
             }
         }
 
+        void NewWave()
+        {
+            TheUI.WaveComplete.HideDisplay();
+
+            foreach (City city in FilledCities)
+            {
+                city.Active = true;
+            }
+
+            FilledCities.Clear();
+
+            BomberTimer.Reset(3);
+            SatetlliteTimer.Reset(5);
+            BackgroundRef.NewWave(PlayerRef.DefuseColor);
+            MissilesRef.NewWave();
+            GameMode = GameState.InPlay;
+        }
+
         void BonusPoints()
         {
             if (TheUI.WaveComplete.Done)
             {
-                GameMode = GameState.BonusCity;
+                NewWave();
             }
         }
 
         void BonusCityAward()
         {
+            if (!TheUI.WaveComplete.Done)
+            {
+                return;
+            }
+
             if (!BonusCityAwarded)
             {
                 BonusCityAwarded = true;
@@ -230,9 +259,8 @@ namespace MissileCommand
             if (BonusCitySoundTimer.Expired)
             {
                 TheUI.WaveComplete.BonusCity.ShowWords(false);
-                BackgroundRef.NewWave(PlayerRef.DefuseColor);
-                MissilesRef.NewWave();
-                GameMode = GameState.InPlay;
+                BonusCityAwarded = false;
+                NewWave();
             }
         }
 
@@ -251,40 +279,15 @@ namespace MissileCommand
             {
                 GameOver();
                 OpenCities.Clear();
-                FilledCities.Clear();
                 return;
             }
-
-            if (NewCityCount + OpenCities.Count > 5)
-            {
-                foreach (City city in BackgroundRef.Cities)
-                {
-                    city.Active = true;
-                }
-
-                System.Diagnostics.Debug.WriteLine("New City Count " + NewCityCount.ToString());
-                System.Diagnostics.Debug.WriteLine("Open Cities Count " + OpenCities.Count.ToString());
-                NewCityCount -= 5 - OpenCities.Count;
-                System.Diagnostics.Debug.WriteLine("New City Count Adjusted " + NewCityCount.ToString());
-                OpenCities.Clear();
-                FilledCities.Clear();
-                GameMode = GameState.InPlay;
-                return;
-            }
-
-            foreach (City city in FilledCities)
-            {
-                city.Active = true;
-            }
-
-            FilledCities.Clear();
 
             for (int i = 0; i < OpenCities.Count; i++)
             {
                 if (NewCityCount > 0)
                 {
                     int newCity = Services.RandomMinMax(0, OpenCities.Count - 1);
-                    OpenCities[newCity].Active = true;
+                    FilledCities.Add(OpenCities[newCity]);
                     OpenCities.RemoveAt(newCity);
                     NewCityCount--;
                 }
@@ -298,9 +301,7 @@ namespace MissileCommand
                 return;
             }
 
-            BackgroundRef.NewWave(PlayerRef.DefuseColor);
-            MissilesRef.NewWave();
-            GameMode = GameState.InPlay;
+            GameMode = GameState.BonusPoints;
         }
 
         void MainMenu()

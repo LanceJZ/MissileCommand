@@ -23,8 +23,8 @@ namespace MissileCommand.Entities
 
         Words BonusPointsText;
         Words BonusCityText;
-        Numbers MissilePoints;
-        Numbers CityPoints;
+        Numbers MissilePointsNumbers;
+        Numbers CityPointsNumbers;
         List<AModel> MissileModels;
         List<AModel> CityModels;
         XnaModel CityModel;
@@ -44,6 +44,9 @@ namespace MissileCommand.Entities
         bool IsDone = false;
 
         public Words BonusCity { get => BonusCityText; }
+        public Words BonusPoints { get => BonusPointsText; }
+        public Numbers MissilePoints { get => MissilePointsNumbers; }
+        public Numbers CityPointes { get => CityPointsNumbers; }
         public bool Done { get => IsDone; }
 
         public WaveCompleteUI(Game game, GameLogic gameLogic) : base(game)
@@ -51,14 +54,14 @@ namespace MissileCommand.Entities
             GameLogicRef = gameLogic;
             BonusPointsText = new Words(game);
             BonusCityText = new Words(game);
-            MissilePoints = new Numbers(game);
-            CityPoints = new Numbers(game);
+            MissilePointsNumbers = new Numbers(game);
+            CityPointsNumbers = new Numbers(game);
             MissileModels = new List<AModel>();
             CityModels = new List<AModel>();
 
             MissileCountTimer = new Timer(game);
             CityCountTimer = new Timer(game);
-            EndTimer = new Timer(game, 3);
+            EndTimer = new Timer(game, 1);
 
             // Screen resolution is 1200 X 900.
             // Y positive on top of window. So down is negative.
@@ -107,10 +110,10 @@ namespace MissileCommand.Entities
             BonusCityText.ProcessWords("BONUS CITY", new Vector3(-100, -200, 10), 2);
             BonusPointsText.ShowWords(false);
             BonusCityText.ShowWords(false);
-            MissilePoints.ProcessNumber(0, new Vector3(-40, 50, 10), 2);
-            CityPoints.ProcessNumber(0, new Vector3(-60, -50, 10), 2);
-            MissilePoints.ShowNumbers(false);
-            CityPoints.ShowNumbers(false);
+            MissilePointsNumbers.ProcessNumber(0, new Vector3(-40, 50, 10), 2);
+            CityPointsNumbers.ProcessNumber(0, new Vector3(-60, -50, 10), 2);
+            MissilePointsNumbers.ShowNumbers(false);
+            CityPointsNumbers.ShowNumbers(false);
             MissileCountTimer.Amount = (float)CountSound.Duration.TotalSeconds;
             CityCountTimer.Amount = MissileCountTimer.Amount + 0.25f;
         }
@@ -120,6 +123,7 @@ namespace MissileCommand.Entities
             switch (GameLogicRef.CurrentMode)
             {
                 case GameState.BonusPoints:
+                case GameState.BonusCityAwarded:
                     switch (Currentmode)
                     {
                         case WaveMode.CountMissiles:
@@ -132,8 +136,7 @@ namespace MissileCommand.Entities
                             if (MissileCountTimer.Expired)
                             {
                                 MissileCountTimer.Reset();
-                                CountSound.Play();
-                                MissilePoints.ShowNumbers(true);
+                                MissilePointsNumbers.ShowNumbers(true);
                                 CountTheMissiles();
                             }
                             break;
@@ -147,8 +150,7 @@ namespace MissileCommand.Entities
                             if (CityCountTimer.Expired)
                             {
                                 CityCountTimer.Reset();
-                                CountSound.Play();
-                                CityPoints.ShowNumbers(true);
+                                CityPointsNumbers.ShowNumbers(true);
                                 CountTheCities();
                             }
 
@@ -157,8 +159,10 @@ namespace MissileCommand.Entities
                         case WaveMode.End:
                             if (EndTimer.Expired)
                             {
-                                BonusPointsDisplayEnd();
-                                IsDone = true;
+                                EndTimer.Reset();
+
+                                if (!IsDone)
+                                    BonusPointsDisplayEnd();
                             }
                             break;
                     }
@@ -179,22 +183,27 @@ namespace MissileCommand.Entities
             Currentmode = WaveMode.CountMissiles;
         }
 
-        void BonusPointsDisplayEnd()
+        public void HideDisplay()
         {
-            foreach(AModel city in CityModels)
+            foreach (AModel city in CityModels)
             {
                 city.Active = false;
             }
 
-            foreach(AModel missile in MissileModels)
+            foreach (AModel missile in MissileModels)
             {
                 missile.Active = false;
             }
 
-            GameLogicRef.ScoreUpdate(BonusMissileAmount + BonusCityAmount);
             BonusPointsText.ShowWords(false);
-            MissilePoints.ShowNumbers(false);
-            CityPoints.ShowNumbers(false);
+            MissilePointsNumbers.ShowNumbers(false);
+            CityPointsNumbers.ShowNumbers(false);
+        }
+
+        void BonusPointsDisplayEnd()
+        {
+            GameLogicRef.ScoreUpdate(BonusMissileAmount + BonusCityAmount);
+            IsDone = true;
         }
 
         void CountTheMissiles()
@@ -211,9 +220,10 @@ namespace MissileCommand.Entities
 
             if (countedSoFar < MissileCount)
             {
+                CountSound.Play();
                 MissileModels[countedSoFar].Active = true;
                 BonusMissileAmount += 5;
-                MissilePoints.UpdateNumber(BonusMissileAmount);
+                MissilePointsNumbers.UpdateNumber(BonusMissileAmount);
             }
             else
             {
@@ -235,9 +245,10 @@ namespace MissileCommand.Entities
 
             if (countedSoFar < CityCount)
             {
+                CountSound.Play();
                 CityModels[countedSoFar].Active = true;
                 BonusCityAmount += 100;
-                CityPoints.UpdateNumber(BonusCityAmount);
+                CityPointsNumbers.UpdateNumber(BonusCityAmount);
             }
             else
             {

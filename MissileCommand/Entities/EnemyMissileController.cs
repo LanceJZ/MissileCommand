@@ -102,11 +102,11 @@ namespace MissileCommand.Entities
             {
                 if (FireTimer.Expired)
                 {
-                    float maxTime = 15.0f - (TheWave * 0.25f);
-                    float minTime = 5.0f - (TheWave * 0.1f);
+                    float maxTime = 6.0f - (TheWave * 0.25f);
+                    float minTime = 3.0f - (TheWave * 0.1f);
 
-                    if (maxTime < 4)
-                        maxTime = 4;
+                    if (maxTime < 2)
+                        maxTime = 2;
 
                     if (minTime < 1)
                         minTime = 1;
@@ -115,9 +115,16 @@ namespace MissileCommand.Entities
                     LaunchMissile();
                 }
 
-                if (Active)
+                Collusions();
+
+                if (LaunchedMissiles >= MaxNumberOfMissiles &&
+                    !GameLogicRef.BomberRef.Active && !GameLogicRef.SatelliteRef.Active)
                 {
-                    Collusions();
+                    if (CheckForActiveMissiles())
+                    {
+                        PlayerRef.Active = false;
+                        GameLogicRef.Bonus();
+                    }
                 }
             }
 
@@ -172,23 +179,22 @@ namespace MissileCommand.Entities
         {
             if (Services.RandomMinMax(0.0f, 100.0f) > 50)
             {
-                return new Vector3(BackgroundRef.Cities[TargetedCities[Services.RandomMinMax(0,
-                    TargetedCities.Length - 1)]].Position.X, -400, 0);
+                int target = Services.RandomMinMax(0, TargetedCities.Length - 1);
+                return new Vector3(BackgroundRef.Cities[TargetedCities[target]].Position.X, -400, 0);
             }
             else
             {
                 int silo = Services.RandomMinMax(0, 2);
-                return new Vector3(Services.RandomMinMax(TargetBases[silo].Min,
-                    TargetBases[silo].Max), -400, 0);
+                return new Vector3(Services.RandomMinMax(TargetBases[silo].Min, TargetBases[silo].Max), -400, 0);
             }
         }
 
         public void NewGame()
         {
-            TheWave = 0;
+            TheWave = -1;
             TheMissileSpeed = 20;
-            MaxNumberOfMissiles = 10;
-            TargetedCities = ChoseCities();
+            MaxNumberOfMissiles = 12;
+            NewWave();
         }
 
         public void GameOver()
@@ -205,66 +211,9 @@ namespace MissileCommand.Entities
             TargetedCities = ChoseCities();
             TheMissileSpeed += 3;
             MaxNumberOfMissiles += 2;
+            LaunchedMissiles = 0;
             TheWave++;
             FireTimer.Reset(NewWaveSound.Duration.Seconds);
-        }
-
-        int[] ChoseCities()
-        {
-            NewWaveSound.Play();
-
-            int citiesLeft = 0;
-            int targetCities = 3;
-
-            foreach (City city in GameLogicRef.BackgroundRef.Cities)
-            {
-                if (city.Active)
-                    citiesLeft++;
-            }
-
-            if (citiesLeft < 3)
-                targetCities = citiesLeft;
-
-            int[] targetedCities = new int[targetCities];
-
-            for (int i = 0; i < targetCities; i++)
-            {
-                targetedCities[i] = 0;
-            }
-
-            for (int city = 0; city < targetCities; city++)
-            {
-                bool nextCity = false;
-                int cityTarget = 0;
-
-                while (!nextCity)
-                {
-                    nextCity = true;
-                    cityTarget = Services.RandomMinMax(0, 5);
-
-                    for (int i = 0; i < targetCities; i++)
-                    {
-                        if (i != city)
-                        {
-                            if (cityTarget == targetedCities[i])
-                            {
-                                nextCity = false;
-                                break;
-                            }
-
-                            if (!BackgroundRef.Cities[cityTarget].Active)
-                            {
-                                nextCity = false;
-                                break;
-                            }
-                        }
-                    }
-                }
-
-                targetedCities[city] = cityTarget;
-            }
-
-            return targetedCities;
         }
 
         void LaunchMissile()
@@ -283,24 +232,17 @@ namespace MissileCommand.Entities
                 else
                 {
 
-                    GameLogicRef.BomberTimer.Reset(20);
-                    GameLogicRef.SatetlliteTimer.Reset(20);
+                    GameLogicRef.BomberTimer.Reset(30);
+                    GameLogicRef.SatetlliteTimer.Reset(30);
                 }
             }
             else
             {
-                if (CheckForActiveMissiles())
-                {
-                    LaunchedMissiles = 0;
-                    PlayerRef.Active = false;
-
-                    //GameLogicRef.BomberTimer.Reset(15);
-                    //GameLogicRef.SatetlliteTimer.Reset(12);
-
-                    //System.Diagnostics.Debug.WriteLine("Wave: " + TheWave.ToString());
-
-                    GameLogicRef.Bonus();
-                }
+                //if (CheckForActiveMissiles())
+                //{
+                //    PlayerRef.Active = false;
+                //    GameLogicRef.Bonus();
+                //}
             }
         }
 
@@ -368,6 +310,64 @@ namespace MissileCommand.Entities
             }
 
             return true;
+        }
+
+        int[] ChoseCities()
+        {
+            NewWaveSound.Play();
+
+            int citiesLeft = 0;
+            int targetCities = 3;
+
+            foreach (City city in GameLogicRef.BackgroundRef.Cities)
+            {
+                if (city.Active)
+                    citiesLeft++;
+            }
+
+            if (citiesLeft < 3)
+                targetCities = citiesLeft;
+
+            int[] targetedCities = new int[targetCities];
+
+            for (int i = 0; i < targetCities; i++)
+            {
+                targetedCities[i] = 0;
+            }
+
+            for (int city = 0; city < targetCities; city++)
+            {
+                bool nextCity = false;
+                int cityTarget = 0;
+
+                while (!nextCity)
+                {
+                    nextCity = true;
+                    cityTarget = Services.RandomMinMax(0, 5);
+
+                    for (int i = 0; i < targetCities; i++)
+                    {
+                        if (i != city)
+                        {
+                            if (cityTarget == targetedCities[i])
+                            {
+                                nextCity = false;
+                                break;
+                            }
+
+                            if (!BackgroundRef.Cities[cityTarget].Active)
+                            {
+                                nextCity = false;
+                                break;
+                            }
+                        }
+                    }
+                }
+
+                targetedCities[city] = cityTarget;
+            }
+
+            return targetedCities;
         }
     }
 }
