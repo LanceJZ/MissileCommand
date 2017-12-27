@@ -52,7 +52,7 @@ namespace MissileCommand
 
         int Score = 0;
         int NextNewCity = 0;
-        int NewCityAmount = 1000; //TODO: Normally 10000.
+        int NewCityAmount = 5000; //TODO: Normally 10000.
         int NewCityCount = 0;
 
         bool BonusCityAwarded = false;
@@ -68,6 +68,7 @@ namespace MissileCommand
         public Timer SmartBombTimer { get => SmartBombRunTimer; }
         public float GameScale { get => TheGameScale; }
         public int GameScore { get => Score; }
+        public int BonusCityAmount { get => NewCityAmount; }
 
         public GameLogic(Game game) : base(game)
         {
@@ -126,14 +127,29 @@ namespace MissileCommand
             TheUI.ScoreDisplay.UpdateNumber(Score);
         }
 
+        public void SwitchToAttract()
+        {
+            GameMode = GameState.Attract;
+        }
+
         public void GameOver()
         {
+            TheUI.WaveComplete.BonusPoints.ShowWords(false);
             MissilesRef.GameOver();
             PlayerRef.GameOver();
             BackgroundRef.GameOver();
             TheBomber.Active = false;
             TheSatellite.Active = false;
-            GameMode = GameState.Over;
+            TheUI.WaveComplete.HideDisplay();
+
+            if (TheUI.HighScores.CheckHighScore(Score))
+            {
+                GameMode = GameState.HighScore;
+            }
+            else
+            {
+                GameMode = GameState.Over;
+            }
         }
 
         public void Bonus()
@@ -203,9 +219,9 @@ namespace MissileCommand
                 case GameState.BonusCityAwarded:
                     BonusCityAward();
                     break;
-                case GameState.Over:
-                    GameOver();
-                    break;
+                //case GameState.Over:
+                //    GameOver();
+                //    break;
                 case GameState.Attract:
                     MainMenu();
                     break;
@@ -304,9 +320,14 @@ namespace MissileCommand
             NewWave();
         }
 
-        void MainMenu()
+        void MainMenu() //TODO: Enable Attract mode, show high scores.
         {
 
+        }
+
+        void PutIntoAtrackMode()
+        {
+            GameMode = GameState.Attract;
         }
 
         void HighScore()
@@ -450,6 +471,7 @@ namespace MissileCommand
             BackgroundRef.NewGame();
             MissilesRef.NewGame();
             PlayerRef.NewGame();
+            TheUI.NewGame();
             GameMode = GameState.InPlay;
         }
     }

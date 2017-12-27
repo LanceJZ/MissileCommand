@@ -59,10 +59,16 @@ namespace MissileCommand.Entities
 
         public void BeginRun()
         {
+            string gameOver = "GAME OVER";
+            string scoretxt = "SCORE";
+            string pressEnter = "PRESS ENTER TO START GAME";
+
             TheScoreDisplay.ProcessNumber(0, new Vector3(-250, 400, 100), 2);
-            TheScoreText.ProcessWords("SCORE", new Vector3(-550, 400, 100), 2);
-            TheGameOverText.ProcessWords("GAME OVER", new Vector3(-160, 100, 100), 4);
-            TheStartANewGameText.ProcessWords("PRESS ENTER TO START GAME", new Vector3(-125, 0, 100), 1);
+            TheScoreText.ProcessWords(scoretxt, new Vector3(-550, 400, 100), 2);
+            TheGameOverText.ProcessWords(gameOver,
+                new Vector3(-gameOver.Length * 20, 300, 100), 4); //-160
+            TheStartANewGameText.ProcessWords(pressEnter,
+                new Vector3(-pressEnter.Length * 5, 250, 100), 1); //-125
         }
 
         public override void Update(GameTime gameTime)
@@ -72,6 +78,13 @@ namespace MissileCommand.Entities
             OldKeyState = Keyboard.GetState();
 
             base.Update(gameTime);
+        }
+
+        public void NewGame()
+        {
+            TheGameOverText.ShowWords(false);
+            TheStartANewGameText.ShowWords(false);
+            HighScores.NewGame();
         }
 
         void SwitchState()
@@ -105,20 +118,20 @@ namespace MissileCommand.Entities
         {
             KeyboardState KBS = Keyboard.GetState();
 
-            GameLogicRef.GameOver();
+            if (!OldKeyState.IsKeyDown(Keys.Enter) && KBS.IsKeyDown(Keys.Enter))
+            {
+                GameLogicRef.NewGame();
+            }
         }
 
         void GameOver()
         {
             KeyboardState KBS = Keyboard.GetState();
 
-            if (!OldKeyState.IsKeyDown(Keys.Enter) && KBS.IsKeyDown(Keys.Enter))
-            {
-                GameLogicRef.NewGame();
-            }
-
             TheGameOverText.ShowWords(true);
             TheStartANewGameText.ShowWords(true);
+
+            GameLogicRef.SwitchToAttract();
         }
 
         void HighScore()
@@ -131,8 +144,6 @@ namespace MissileCommand.Entities
         {
             KeyboardState KBS = Keyboard.GetState();
 
-            TheGameOverText.ShowWords(false);
-            TheStartANewGameText.ShowWords(false);
         }
     }
 }

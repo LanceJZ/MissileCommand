@@ -125,7 +125,7 @@ namespace MissileCommand
             if (FPSTimer.Expired)
             {
                 FPSTimer.Reset();
-                System.Diagnostics.Debug.WriteLine(FPSFrames.ToString());
+                System.Diagnostics.Debug.WriteLine("FPS " + FPSFrames.ToString());
                 FPSFrames = 0;
             }
         }
