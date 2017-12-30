@@ -21,16 +21,12 @@ namespace MissileCommand.Entities
         Timer SplitTimer;
 
         Vector3 Target;
-        bool PlayerMissile = false;
+        bool PlayerMissile;
+        public bool TempSpeedup;
 
         public float TimerAmount
         {
             set => TrailTimer.Amount = value;
-        }
-
-        public Vector3 TrailColor
-        {
-            set => Trail.DefuseColor = value;
         }
 
         public Missile(Game game, GameLogic gameLogic) : base(game)
@@ -114,26 +110,28 @@ namespace MissileCommand.Entities
             base.Update(gameTime);
         }
 
-        public void Spawn(Vector3 position, AModel target, float speed)
+        public void Spawn(Vector3 position, AModel target, float speed, Vector3 defuseColor)
         {
             TargetMod = target;
-
-            Spawn(position, target.Position, speed);
+            Spawn(position, target.Position, speed, defuseColor);
         }
 
-        public void Spawn(Vector3 position, Vector3 target, float speed)
+        public void Spawn(Vector3 position, Vector3 target, float speed, Vector3 defuseColor)
         {
+            TempSpeedup = false;
             Position = position;
             Position.Z = 0;
             Target = target;
             Active = true;
             Hit = false;
+            DefuseColor = defuseColor;
             Trail.Active = true;
             Trail.Hit = false;
             Trail.ModelScale = new Vector3(0);
             Trail.Position = position;
             Trail.Position.Z = -2;
             Trail.Rotation = new Vector3(0, 0, AngleFromVectors(Target));
+            Trail.DefuseColor = DefuseColor;
             Rotation = Trail.Rotation;
             Velocity = VelocityFromVectors(Target, speed);
             MatrixUpdate();

@@ -11,6 +11,7 @@ namespace MissileCommand.Entities
 {
     public class MissileBase : PositionedObject
     {
+        GameLogic GameLogicRef;
         Explosion Explode;
         SoundEffect ExplodeSound;
         AModel[] TheMissiles = new AModel[10];
@@ -18,9 +19,10 @@ namespace MissileCommand.Entities
         public AModel[] Missiles { get => TheMissiles; }
 
 
-        public MissileBase(Game game) : base(game)
+        public MissileBase(Game game, GameLogic gameLogic) : base(game)
         {
-            Explode = new Explosion(game);
+            GameLogicRef = gameLogic;
+            Explode = new Explosion(game, gameLogic);
             Explode.Active = false;
 
             for (int i = 0; i < 10; i++)

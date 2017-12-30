@@ -299,7 +299,6 @@ namespace MissileCommand.Entities
                     HighScoreSelectedLetters = "___".ToCharArray();
                     NewHighScoreWords.UpdateWords("___");
                     NewHighScoreWords.ShowWords(true);
-
                     return true;
                 }
             }
@@ -366,7 +365,6 @@ namespace MissileCommand.Entities
             ShowInstructions(false);
             WriteFile();
             NewHighScoreWords.ShowWords(false);
-            ShowHighScoreList(true);
             GameLogicRef.SwitchToAttract();
         }
 

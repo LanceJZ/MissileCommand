@@ -91,8 +91,7 @@ namespace MissileCommand.Entities
                 CityModels.Add(new AModel(Game, CityModel));
                 CityModels.Last().Active = false;
                 CityModels.Last().Position.Y = -50;
-                CityModels.Last().Position.X = i * (CityModels.Last().SphereRadius * 3);
-                CityModels.Last().DefuseColor = GameLogicRef.PlayerRef.DefuseColor;
+                CityModels.Last().Position.X = -100 + (i * (CityModels.Last().SphereRadius * 3));
                 CityModels.Last().MatrixUpdate();
             }
 
@@ -101,8 +100,7 @@ namespace MissileCommand.Entities
                 MissileModels.Add(new AModel(Game, MissileModel));
                 MissileModels.Last().Active = false;
                 MissileModels.Last().Position.Y = 50;
-                MissileModels.Last().Position.X = i * (MissileModels.Last().SphereRadius * 3);
-                MissileModels.Last().DefuseColor = GameLogicRef.PlayerRef.DefuseColor;
+                MissileModels.Last().Position.X = -100 + (i * (MissileModels.Last().SphereRadius * 3));
                 MissileModels.Last().MatrixUpdate();
             }
 
@@ -110,8 +108,8 @@ namespace MissileCommand.Entities
             BonusCityText.ProcessWords("BONUS CITY", new Vector3(-100, -200, 10), 2);
             BonusPointsText.ShowWords(false);
             BonusCityText.ShowWords(false);
-            MissilePointsNumbers.ProcessNumber(0, new Vector3(-40, 50, 10), 2);
-            CityPointsNumbers.ProcessNumber(0, new Vector3(-60, -50, 10), 2);
+            MissilePointsNumbers.ProcessNumber(0, new Vector3(-160, 50, 10), 2);
+            CityPointsNumbers.ProcessNumber(0, new Vector3(-160, -50, 10), 2);
             MissilePointsNumbers.ShowNumbers(false);
             CityPointsNumbers.ShowNumbers(false);
             MissileCountTimer.Amount = (float)CountSound.Duration.TotalSeconds;
@@ -161,7 +159,10 @@ namespace MissileCommand.Entities
                                 EndTimer.Reset();
 
                                 if (!IsDone)
+                                {
                                     BonusPointsDisplayEnd();
+                                    GameLogicRef.MissilesRef.NextWave();
+                                }
                             }
                             break;
                     }
@@ -221,6 +222,7 @@ namespace MissileCommand.Entities
             {
                 CountSound.Play();
                 MissileModels[countedSoFar].Active = true;
+                MissileModels[countedSoFar].DefuseColor = GameLogicRef.PlayerColor;
                 BonusMissileAmount += 5;
                 MissilePointsNumbers.UpdateNumber(BonusMissileAmount);
             }
@@ -246,6 +248,7 @@ namespace MissileCommand.Entities
             {
                 CountSound.Play();
                 CityModels[countedSoFar].Active = true;
+                CityModels[countedSoFar].DefuseColor = GameLogicRef.PlayerColor;
                 BonusCityAmount += 100;
                 CityPointsNumbers.UpdateNumber(BonusCityAmount);
             }

@@ -22,6 +22,24 @@ namespace MissileCommand
         Attract
     };
 
+    public enum DefuseColor
+    {
+        Red,
+        Blue,
+        Yellow,
+        Green,
+        Black
+    }
+
+    public enum BackGroundColor
+    {
+        Black,
+        Blue,
+        LightBlue,
+        Purple,
+        Yellow
+    }
+
     public class GameLogic : GameComponent, IBeginable, IUpdateableComponent, ILoadContent
     {
         float TheGameScale = 1.91f;
@@ -37,6 +55,8 @@ namespace MissileCommand
         List<City> FilledCities = new List<City>();
 
         GameState GameMode = GameState.Attract;
+        DefuseColor TheDefuseColor;
+        BackGroundColor TheBackColor;
 
         Timer BomberRunTimer;
         Timer SatelliteRunTimer;
@@ -47,12 +67,16 @@ namespace MissileCommand
         SoundEffect RadarSound;
         SoundEffect NewCitySound;
 
-        Vector3 TheEnemyColor = new Vector3(1, 0, 0);
-        Vector3 ThePlayerColor = new Vector3(0.2f, 0.1f, 2.5f);
+        Color TheBackgroundColor;
+        Vector3 TheEnemyColor;
+        Vector3 ThePlayerColor;
+        Vector3 TheGroundColor;
+        Vector3[] TheLevelColors = new Vector3[5];
+        Color[] BackgroundColors = new Color[5];
 
         int Score = 0;
         int NextNewCity = 0;
-        int NewCityAmount = 5000; //TODO: Normally 10000.
+        int NewCityAmount = 8000; //TODO: Normally 10000.
         int NewCityCount = 0;
 
         bool BonusCityAwarded = false;
@@ -63,9 +87,12 @@ namespace MissileCommand
         public EnemyMissileController MissilesRef { get => TheMissiles; }
         public Bomber BomberRef { get => TheBomber; }
         public Satellite SatelliteRef { get => TheSatellite; }
-        public Timer BomberTimer { get => BomberRunTimer; }
-        public Timer SatetlliteTimer { get => SatelliteRunTimer; }
-        public Timer SmartBombTimer { get => SmartBombRunTimer; }
+        public SmartBomb SmartBombRef { get => TheSmartBomb; }
+        public Vector3[] LevelColors { get => TheLevelColors; }
+        public Vector3 EnemyColor { get => TheEnemyColor; }
+        public Vector3 GroundColor { get => TheGroundColor; }
+        public Vector3 PlayerColor { get => ThePlayerColor; }
+        public Color Background { get => TheBackgroundColor; }
         public float GameScale { get => TheGameScale; }
         public int GameScore { get => Score; }
         public int BonusCityAmount { get => NewCityAmount; }
@@ -95,6 +122,17 @@ namespace MissileCommand
 
         public override void Initialize()
         {
+            TheLevelColors[0] = new Vector3(0.01f, 0.0f, 0.01f);
+            TheLevelColors[1] = new Vector3(0.286f, 0.286f, 1.5f);
+            TheLevelColors[2] = new Vector3(0.3f, 1, 0.129f);
+            TheLevelColors[3] = new Vector3(1, 0, 0);
+            TheLevelColors[4] = new Vector3(1, 1, 0);
+
+            BackgroundColors[0] = new Color(0.01f, 0.0f, 0.01f);
+            BackgroundColors[1] = new Color(0.1f, 0, 1);
+            BackgroundColors[2] = new Color(0.329f, 0.56f, 1);
+            BackgroundColors[3] = new Color(0.537f, 0.31f, 1);
+            BackgroundColors[4] = new Color(0.721f, 0.807f, 0.07f);
 
             base.Initialize();
             Services.AddLoadable(this);
@@ -111,6 +149,12 @@ namespace MissileCommand
         {
             RadarSoundTimer.Amount = (float)RadarSound.Duration.TotalSeconds;
             BonusCitySoundTimer.Amount = (float)NewCitySound.Duration.TotalSeconds + 1;
+            TheGroundColor = TheLevelColors[4];
+
+            foreach(AModel plot in BackgroundRef.Ground)
+            {
+                plot.DefuseColor = TheGroundColor;
+            }
         }
 
         public override void Update(GameTime gameTime)
@@ -120,7 +164,7 @@ namespace MissileCommand
             base.Update(gameTime);
         }
 
-        public void ScoreUpdate(int score)
+        public void ScoreUpdate(int score) //TODO: Move multiplier to function to call score count/missiles.
         {
             int muliplier = (int)(TheMissiles.Wave / 2.1f) + 1;
             Score += (score * muliplier);
@@ -148,7 +192,7 @@ namespace MissileCommand
             }
             else
             {
-                GameMode = GameState.Over;
+                GameMode = GameState.Attract;
             }
         }
 
@@ -173,7 +217,6 @@ namespace MissileCommand
                 {
                     if (acm.Active)
                     {
-                        //GameLogicRef.ScoreUpdate(25);
                         missileCount++;
                     }
 
@@ -185,7 +228,6 @@ namespace MissileCommand
             {
                 if (city.Active)
                 {
-                    //GameLogicRef.ScoreUpdate(100);
                     FilledCities.Add(city);
                     cityCount++;
                 }
@@ -219,9 +261,6 @@ namespace MissileCommand
                 case GameState.BonusCityAwarded:
                     BonusCityAward();
                     break;
-                //case GameState.Over:
-                //    GameOver();
-                //    break;
                 case GameState.Attract:
                     MainMenu();
                     break;
@@ -234,6 +273,14 @@ namespace MissileCommand
         void NewWave()
         {
             TheUI.WaveComplete.HideDisplay();
+            BomberRunTimer.Reset(3);
+            SatelliteRunTimer.Reset(5);
+            SetTheGameColors();
+
+            foreach(City city in TheBackground.Cities)
+            {
+                city.DefuseColor = ThePlayerColor;
+            }
 
             foreach (City city in FilledCities)
             {
@@ -241,12 +288,70 @@ namespace MissileCommand
             }
 
             FilledCities.Clear();
-
-            BomberTimer.Reset(3);
-            SatetlliteTimer.Reset(5);
-            BackgroundRef.NewWave(PlayerRef.DefuseColor);
-            MissilesRef.NewWave();
+            BackgroundRef.NewWave();
+            MissilesRef.StartWave(TheEnemyColor);
+            PlayerRef.DefuseColor = ThePlayerColor;
             GameMode = GameState.InPlay;
+        }
+
+        void SetTheGameColors()
+        {
+            int wave = MissilesRef.Wave;
+
+            if (wave > 14)
+                wave -= 14;
+
+            if (wave > 28)
+                wave -= 28;
+
+            switch (wave)
+            {
+                case 0:
+                    ThePlayerColor = TheLevelColors[1];
+                    TheEnemyColor = TheLevelColors[3];
+                    TheGroundColor = TheLevelColors[4];
+                    TheBackgroundColor = BackgroundColors[0];
+                    break;
+                case 2:
+                    ThePlayerColor = TheLevelColors[1];
+                    TheEnemyColor = TheLevelColors[2];
+                    TheGroundColor = TheLevelColors[4];
+                    break;
+                case 4:
+                    ThePlayerColor = TheLevelColors[2];
+                    TheEnemyColor = TheLevelColors[3];
+                    TheGroundColor = TheLevelColors[1];
+                    break;
+                case 6:
+                    ThePlayerColor = TheLevelColors[1];
+                    TheEnemyColor = TheLevelColors[4];
+                    TheGroundColor = TheLevelColors[3];
+                    break;
+                case 8:
+                    ThePlayerColor = TheLevelColors[0];
+                    TheEnemyColor = TheLevelColors[3];
+                    TheGroundColor = TheLevelColors[4];
+                    TheBackgroundColor = BackgroundColors[1];
+                    break;
+                case 10:
+                    ThePlayerColor = TheLevelColors[1];
+                    TheEnemyColor = TheLevelColors[0];
+                    TheGroundColor = TheLevelColors[4];
+                    TheBackgroundColor = BackgroundColors[2];
+                    break;
+                case 12:
+                    ThePlayerColor = TheLevelColors[4];
+                    TheEnemyColor = TheLevelColors[0];
+                    TheGroundColor = TheLevelColors[2];
+                    TheBackgroundColor = BackgroundColors[3];
+                    break;
+                case 14:
+                    ThePlayerColor = TheLevelColors[3];
+                    TheEnemyColor = TheLevelColors[0];
+                    TheGroundColor = TheLevelColors[2];
+                    TheBackgroundColor = BackgroundColors[4];
+                    break;
+            }
         }
 
         void BonusPoints()
@@ -280,7 +385,7 @@ namespace MissileCommand
             }
         }
 
-        void BonusCity() //TODO: FIx this.
+        void BonusCity()
         {
             bool newCityAwarded = false;
 
@@ -320,9 +425,10 @@ namespace MissileCommand
             NewWave();
         }
 
-        void MainMenu() //TODO: Enable Attract mode, show high scores.
+        void MainMenu()
         {
-
+            TheUI.HighScores.ShowHighScoreList(true);
+            GameMode = GameState.Over;
         }
 
         void PutIntoAtrackMode()
@@ -337,62 +443,54 @@ namespace MissileCommand
 
         void GamePlay()
         {
-            BomberSatelliteControl();
+            BomberSatSmartControl();
         }
 
-        void BomberSatelliteControl()
+        public void ResetBomberTimer()
+        {
+            BomberRunTimer.Reset(Services.RandomMinMax(5.0f, 10.0f));
+        }
+
+        public void ResetSatelliteTimer()
+        {
+            SatelliteRunTimer.Reset(Services.RandomMinMax(3.0f, 8.0f));
+        }
+
+        public void ResetSmartBombTimer()
+        {
+            SmartBombRunTimer.Reset(Services.RandomMinMax(7.0f, 15.0f));
+        }
+
+        void BomberSatSmartControl()
         {
             if (MissilesRef.MissilesLaunched < MissilesRef.MaxMissiles)
             {
-                float spawnX;
-
-                if (Services.RandomMinMax(0, 100) > 50)
-                {
-                    spawnX = -600;
-                }
-                else
-                {
-                    spawnX = 600;
-                }
-
                 if (BomberRunTimer.Expired && TheMissiles.Wave > 0)
                 {
-                    BomberRunTimer.Reset(Services.RandomMinMax(10.0f, 30.0f));
-
-                    if (Services.RandomMinMax(0, 100) > 25)
-                    {
-                        if (!TheBomber.Active)
-                            BomberRun(spawnX);
-                    }
+                    if (!TheBomber.Active)
+                        BomberRun();
                 }
 
                 if (SatelliteRunTimer.Expired && TheMissiles.Wave > 1)
                 {
-                    SatelliteRunTimer.Reset(Services.RandomMinMax(10.0f, 20.0f));
-
-                    if (Services.RandomMinMax(0, 100) > 25)
-                    {
-                        if (!TheSatellite.Active)
-                            SatelliteRun(spawnX);
-                    }
+                    if (!TheSatellite.Active)
+                        SatelliteRun();
                 }
 
                 if (SmartBombRunTimer.Expired && TheMissiles.Wave > 5)
                 {
-                    SmartBombRunTimer.Reset(Services.RandomMinMax(10, 20));
-
-                    if (Services.RandomMinMax(0, 100) > 25)
+                    if (!TheSmartBomb.Active)
                     {
-                        if (!TheSmartBomb.Active)
-                        {
-                            TheSmartBomb.Spawn(new Vector3(Services.RandomMinMax(-400, 400), 550, 0));
-                            TheSmartBomb.DefuseColor = TheEnemyColor;
-                        }
+                        if (IsThereNoMissiles())
+                            return;
+
+                        TheSmartBomb.Spawn(new Vector3(Services.RandomMinMax(-400, 400), 550, 0));
+                        TheSmartBomb.DefuseColor = TheEnemyColor;
                     }
                 }
             }
 
-            if (TheBomber.Active || TheSatellite.Active)
+            if (TheBomber.Active && !TheBomber.Hit || TheSatellite.Active)
             {
                 if (RadarSoundTimer.Expired)
                 {
@@ -402,18 +500,59 @@ namespace MissileCommand
             }
         }
 
-        void BomberRun(float spawnX)
+        float ChoseXSide()
         {
-            Spawn(new Vector3(spawnX, Services.RandomMinMax(50.0f, 250.0f), 0), TheBomber, TheBomber.DropTimer);
-            TheBomber.Spawn();
-            TheBomber.DefuseColor = new Vector3(1, 0, 0);
+            if (Services.RandomMinMax(0, 100) > 50)
+            {
+                return -600;
+            }
+            else
+            {
+                return 600;
+            }
         }
 
-        void SatelliteRun(float spawnX)
+        bool IsThereNoMissiles()
         {
-            Spawn(new Vector3(spawnX, Services.RandomMinMax(300.0f, 400.0f), 0), TheSatellite, TheSatellite.DropTimer);
-            TheSatellite.Spawn();
-            TheSatellite.DefuseColor = new Vector3(1, 0, 0);
+            int missactive = 0;
+
+            foreach (Missile missile in TheMissiles.MissileRef)
+            {
+                if (missile.Active)
+                    missactive++;
+            }
+
+            if (missactive < 4)
+                return true;
+
+            return false;
+        }
+
+        void BomberRun()
+        {
+            if (IsThereNoMissiles())
+                return;
+
+            Spawn(new Vector3(ChoseXSide(), Services.RandomMinMax(50.0f, 250.0f), 0),
+                TheBomber, TheBomber.DropTimer);
+            TheBomber.Spawn(TheEnemyColor);
+        }
+
+        void SatelliteRun()
+        {
+            if (IsThereNoMissiles())
+                return;
+
+            Spawn(new Vector3(ChoseXSide(), Services.RandomMinMax(300.0f, 400.0f), 0),
+                TheSatellite, TheSatellite.DropTimer);
+            TheSatellite.Spawn(TheEnemyColor);
+        }
+
+        public void NoCities()
+        {
+            TheSatellite.Velocity *= 10;
+            TheBomber.Velocity *= 10;
+            TheSmartBomb.Velocity *= 10;
         }
 
         public void Spawn(Vector3 position, PositionedObject po, Timer timer)
@@ -434,7 +573,7 @@ namespace MissileCommand
 
         }
 
-        public void CheckCollusion(PositionedObject po, Timer timer)
+        public void CheckCollusion(PositionedObject po)
         {
             foreach (Explosion explode in PlayerRef.Explosions)
             {
@@ -444,7 +583,6 @@ namespace MissileCommand
                     {
                         ScoreUpdate(100);
                         PlayerRef.SetExplode(po.Position);
-                        timer.Reset(Services.RandomMinMax(10.0f, 30.0f));
                         po.Hit = true;
                         break;
                     }
@@ -473,6 +611,7 @@ namespace MissileCommand
             PlayerRef.NewGame();
             TheUI.NewGame();
             GameMode = GameState.InPlay;
+            NewWave();
         }
     }
 }

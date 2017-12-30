@@ -12,17 +12,21 @@ namespace MissileCommand.Entities
 {
     public class Explosion : AModel
     {
+        GameLogic GameLogicRef;
         Timer BlinkTimer;
         float Speed = 0.5f;
         float TheMaxSize = 1.5f;
+        int CurrentColor= 0;
         bool Growing = true;
-        bool Blinked = true;
+        bool GrowingSet;
+        bool ShrinkingSet;
 
         public float MaxSize { set => TheMaxSize = value; }
 
-        public Explosion(Game game) : base(game)
+        public Explosion(Game game, GameLogic gameLogic) : base(game)
         {
-            BlinkTimer = new Timer(game, 0.1f);
+            GameLogicRef = gameLogic;
+            BlinkTimer = new Timer(game, 0.0666f);
 
             LoadContent();
             BeginRun();
@@ -53,16 +57,12 @@ namespace MissileCommand.Entities
             {
                 BlinkTimer.Reset();
 
-                if (Blinked)
-                {
-                    Blinked = false;
-                    DefuseColor = new Vector3(2, 0, 1);
-                }
-                else
-                {
-                    Blinked = true;
-                    DefuseColor = new Vector3(1, 0, 2);
-                }
+                CurrentColor++;
+
+                if (CurrentColor > 4)
+                    CurrentColor = 0;
+
+                DefuseColor = GameLogicRef.LevelColors[CurrentColor];
             }
 
             if (Active)
@@ -71,7 +71,11 @@ namespace MissileCommand.Entities
 
                 if (Growing)
                 {
-                    ModelScaleVelocity = new Vector3(Speed * 2, Speed * 2, 0);
+                    if (!GrowingSet)
+                    {
+                        ModelScaleVelocity = new Vector3(Speed * 2);
+                        GrowingSet = true;
+                    }
 
                     if (ModelScale.X > TheMaxSize)
                     {
@@ -80,7 +84,11 @@ namespace MissileCommand.Entities
                 }
                 else
                 {
-                    ModelScaleVelocity = new Vector3(-Speed, -Speed, 0);
+                    if (!ShrinkingSet)
+                    {
+                        ModelScaleVelocity = new Vector3(-Speed);
+                        ShrinkingSet = true;
+                    }
 
                     if (ModelScale.X < 0)
                     {
@@ -98,8 +106,10 @@ namespace MissileCommand.Entities
             Position.Z = 10;
             Active = true;
             BlinkTimer.Reset();
-            ModelScale = new Vector3(0, 0, 0.1f);
+            ModelScale = new Vector3(0.1f);
             Growing = true;
+            GrowingSet = false;
+            ShrinkingSet = false;
             MatrixUpdate();
         }
     }

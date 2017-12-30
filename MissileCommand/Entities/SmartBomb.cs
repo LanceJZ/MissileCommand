@@ -9,12 +9,17 @@ using Engine;
 
 namespace MissileCommand.Entities
 {
+    enum RunMode
+    {
+        Drop,
+        Evade
+    }
+
     public class SmartBomb : AModel
     {
         GameLogic GameLogicRef;
         PositionedObject Radar;
-
-        bool ExplosionDetected;
+        RunMode CurrentMode;
         Vector3 OriginalTarget;
         Vector3 AvoidTarget;
 
@@ -68,7 +73,7 @@ namespace MissileCommand.Entities
             RotationVelocity.Y = Services.RandomMinMax(-8, 8);
             RotationVelocity.X = Services.RandomMinMax(-8, 8);
             OriginalTarget = GameLogicRef.MissilesRef.ChoseCitySiloTarget();
-            ExplosionDetected = false;
+            CurrentMode = RunMode.Drop;
 
             MatrixUpdate();
         }
@@ -76,26 +81,30 @@ namespace MissileCommand.Entities
         public void Deactivate()
         {
             Active = false;
+            GameLogicRef.ResetSmartBombTimer();
         }
 
         void DetectExplosions()
         {
-            ExplosionDetected = false;
-
             foreach (Explosion explode in GameLogicRef.PlayerRef.Explosions)
             {
                 if (explode.Active)
                 {
                     if (Radar.CirclesIntersect(explode))
                     {
-                        ExplosionDetected = true;
+                        CurrentMode = RunMode.Evade;
                         AvoidTarget = explode.Position;
+                    }
+                    else
+                    {
+                        CurrentMode = RunMode.Drop;
                     }
 
                     if (CirclesIntersect(explode))
                     {
                         GameLogicRef.PlayerRef.SetExplode(Position);
                         GameLogicRef.ScoreUpdate(125);
+                        GameLogicRef.ResetBomberTimer();
                         Active = false;
                         break;
                     }
@@ -133,13 +142,14 @@ namespace MissileCommand.Entities
 
         void SetHeading()
         {
-            if (ExplosionDetected)
+            switch(CurrentMode)
             {
+                case RunMode.Evade:
                 Velocity = VelocityFromVectors(AvoidTarget, Position, 70);
-            }
-            else
-            {
-                Velocity = VelocityFromVectors(OriginalTarget, 40);
+                    break;
+                case RunMode.Drop:
+                    Velocity = VelocityFromVectors(OriginalTarget, 40);
+                    break;
             }
         }
     }

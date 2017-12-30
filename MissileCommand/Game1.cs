@@ -136,7 +136,7 @@ namespace MissileCommand
         /// <param name="gameTime">Provides a snapshot of timing values.</param>
         protected override void Draw(GameTime gameTime)
         {
-            GraphicsDevice.Clear(new Color(0.05f, 0, 0.1f));
+            GraphicsDevice.Clear(TheGame.Background);
 
             base.Draw(gameTime);
         }

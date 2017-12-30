@@ -11,16 +11,17 @@ namespace MissileCommand.Entities
 {
     public class City : AModel
     {
+        GameLogic GameLogicRef;
         Explosion Explode;
         SoundEffect ExplodeSound;
 
         public float TargetMin;
         public float TargetMax;
 
-        public City(Game game, float gameScale) : base(game)
+        public City(Game game, GameLogic gameLogic) : base(game)
         {
-            GameScale = gameScale;
-            Explode = new Explosion(game);
+            GameLogicRef = gameLogic;
+            Explode = new Explosion(game, gameLogic);
             Explode.Active = false;
         }
 

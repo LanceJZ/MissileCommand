@@ -84,6 +84,18 @@ namespace MissileCommand.Entities
             base.Update(gameTime);
         }
 
+        public void NewWave()
+        {
+            foreach(TargetedMissile missile in TheMissiles)
+            {
+                if (missile.Active)
+                    missile.Deactivate();
+            }
+
+            Position.X = 0;
+            Position.Y = 0;
+        }
+
         public void NewGame()
         {
             Position.X = 0;
@@ -98,14 +110,14 @@ namespace MissileCommand.Entities
 
         void MissileCollusion()
         {
-            foreach (TargetedMissile tMissile in TheMissiles)
+            foreach (TargetedMissile missile in TheMissiles)
             {
-                if (tMissile.Active)
+                if (missile.Active)
                 {
-                    if (tMissile.SphereIntersect2D(tMissile.TheMissile))
+                    if (missile.SphereIntersect2D(missile.Missiles))
                     {
-                        tMissile.Deactivate();
-                        SetExplode(tMissile.Position);
+                        missile.Deactivate();
+                        SetExplode(missile.Position);
                         break;
                     }
                 }
@@ -210,7 +222,7 @@ namespace MissileCommand.Entities
                 TheMissiles.Add(new TargetedMissile(Game));
             }
 
-            TheMissiles[freeOne].Spawn(basePos, Position);
+            TheMissiles[freeOne].Spawn(basePos, Position, DefuseColor);
         }
 
         public void SetExplode(Vector3 position)
@@ -232,7 +244,7 @@ namespace MissileCommand.Entities
 
             if (spawnNew)
             {
-                TheExplosions.Add(new Explosion(Game));
+                TheExplosions.Add(new Explosion(Game, GameLogicRef));
             }
 
             TheExplosions[freeOne].Spawn(position);

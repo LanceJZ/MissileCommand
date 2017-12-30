@@ -30,9 +30,9 @@ namespace MissileCommand.Entities
         MissileTarget[] TargetBases = new MissileTarget[3];
         MissileTarget[] TargetLand = new MissileTarget[5];
 
-        int[] TargetedCities = new int[3];
+        List<int> TargetedCities = new List<int>();
 
-        Vector3 TheColor = new Vector3(1, 0, 0);
+        Vector3 TheColor;
 
         int MaxNumberOfMissiles = 0;
         int LaunchedMissiles = 0;
@@ -81,6 +81,7 @@ namespace MissileCommand.Entities
             TargetLand[3].Max = BackgroundRef.Cities[5].Position.X - 60;
             TargetLand[4].Min = BackgroundRef.Cities[5].Position.X + 60;
             TargetLand[4].Max = 550 - 60;
+            TheColor = GameLogicRef.EnemyColor;
 
             base.Initialize();
             Services.AddLoadable(this);
@@ -120,10 +121,73 @@ namespace MissileCommand.Entities
                 if (LaunchedMissiles >= MaxNumberOfMissiles &&
                     !GameLogicRef.BomberRef.Active && !GameLogicRef.SatelliteRef.Active)
                 {
-                    if (CheckForActiveMissiles())
+                    if (CheckForActiveMissiles() && !GameLogicRef.SmartBombRef.Active &&
+                        !GameLogicRef.BomberRef.Active && !GameLogicRef.SatelliteRef.Active)
                     {
                         PlayerRef.Active = false;
                         GameLogicRef.Bonus();
+                    }
+                }
+
+                if (Active)
+                {
+                    foreach (Explosion explode in GameLogicRef.PlayerRef.Explosions)
+                    {
+                        if (explode.Active)
+                            return;
+                    }
+
+                    bool noCities = true;
+
+                    foreach (City city in BackgroundRef.Cities)
+                    {
+                        if (city.Active)
+                        {
+                            noCities = false;
+                            Active = false;
+                            break;
+                        }
+                    }
+
+                    if (noCities)
+                    {
+                        foreach (Missile missile in MissileRef)
+                        {
+                            if (!missile.TempSpeedup)
+                            {
+                                missile.Velocity *= 10;
+                                missile.TempSpeedup = true;
+                            }
+                        }
+
+                        GameLogicRef.NoCities();
+                    }
+
+                    bool noMissiles = true;
+
+                    foreach (MissileBase silo in GameLogicRef.BackgroundRef.Bases)
+                    {
+                        foreach (AModel missile in silo.Missiles)
+                        {
+                            if (missile.Active)
+                            {
+                                noMissiles = false;
+                                Active = false;
+                                break;
+                            }
+                        }
+                    }
+
+                    if (noMissiles)
+                    {
+                        foreach (Missile missile in MissileRef)
+                        {
+                            if (!missile.TempSpeedup)
+                            {
+                                missile.Velocity *= 4;
+                                missile.TempSpeedup = true;
+                            }
+                        }
                     }
                 }
             }
@@ -151,14 +215,13 @@ namespace MissileCommand.Entities
                 TheMissiles.Add(new Missile(Game, GameLogicRef));
             }
 
-            TheMissiles[freeOne].Spawn(position, target, speed);
+            TheMissiles[freeOne].Spawn(position, target, speed, TheColor);
             TheMissiles[freeOne].DefuseColor = new Vector3(0.1f, 1, 1);
-            TheMissiles[freeOne].TrailColor = new Vector3(1, 0, 0);
         }
 
         public Vector3 ChoseTarget()
         {
-            if (Services.RandomMinMax(0.0f, 100.0f) < 40 + (TheWave * 1.5f))
+            if (Services.RandomMinMax(0.0f, 100.0f) < 50 + (TheWave * 1.5f) + (TargetedCities.Count * 5))
             {
                 return ChoseCitySiloTarget();
             }
@@ -177,9 +240,9 @@ namespace MissileCommand.Entities
 
         public Vector3 ChoseCitySiloTarget()
         {
-            if (Services.RandomMinMax(0.0f, 100.0f) > 50)
+            if (Services.RandomMinMax(0.0f, 100.0f) < 60 + (TargetedCities.Count * 5))
             {
-                int target = Services.RandomMinMax(0, TargetedCities.Length - 1);
+                int target = Services.RandomMinMax(0, TargetedCities.Count - 1);
                 return new Vector3(BackgroundRef.Cities[TargetedCities[target]].Position.X, -400, 0);
             }
             else
@@ -191,10 +254,9 @@ namespace MissileCommand.Entities
 
         public void NewGame()
         {
-            TheWave = -1;
+            TheWave = 0;
             TheMissileSpeed = 20;
             MaxNumberOfMissiles = 12;
-            NewWave();
         }
 
         public void GameOver()
@@ -205,15 +267,21 @@ namespace MissileCommand.Entities
             }
         }
 
-        public void NewWave()
+        public void StartWave(Vector3 defuseColor)
         {
+            TheColor = defuseColor;
             PlayerRef.Active = true;
+            TargetedCities.Clear();
             TargetedCities = ChoseCities();
             TheMissileSpeed += 3;
             MaxNumberOfMissiles += 2;
             LaunchedMissiles = 0;
-            TheWave++;
             FireTimer.Reset(NewWaveSound.Duration.Seconds);
+        }
+
+        public void NextWave()
+        {
+            TheWave++;
         }
 
         void LaunchMissile()
@@ -223,26 +291,15 @@ namespace MissileCommand.Entities
             {
                 if (LaunchedMissiles < MaxNumberOfMissiles + 4)
                 {
+                    Active = true;
+
                     for (int i = 0; i < 4; i++)
                     {
-                        FireMissile(new Vector3(Services.RandomMinMax(-300, 300), 450, 0), ChoseTarget(), TheMissileSpeed);
+                        FireMissile(new Vector3(Services.RandomMinMax(-300, 300), 450, 0),
+                            ChoseTarget(), TheMissileSpeed);
                         LaunchedMissiles++;
                     }
                 }
-                else
-                {
-
-                    GameLogicRef.BomberTimer.Reset(30);
-                    GameLogicRef.SatetlliteTimer.Reset(30);
-                }
-            }
-            else
-            {
-                //if (CheckForActiveMissiles())
-                //{
-                //    PlayerRef.Active = false;
-                //    GameLogicRef.Bonus();
-                //}
             }
         }
 
@@ -312,59 +369,29 @@ namespace MissileCommand.Entities
             return true;
         }
 
-        int[] ChoseCities()
+        List<int> ChoseCities()
         {
             NewWaveSound.Play();
 
-            int citiesLeft = 0;
-            int targetCities = 3;
+            List<int> citiesAvailable = new List<int>();
 
-            foreach (City city in GameLogicRef.BackgroundRef.Cities)
+            for (int i = 0; i < 6; i++)
             {
-                if (city.Active)
-                    citiesLeft++;
-            }
-
-            if (citiesLeft < 3)
-                targetCities = citiesLeft;
-
-            int[] targetedCities = new int[targetCities];
-
-            for (int i = 0; i < targetCities; i++)
-            {
-                targetedCities[i] = 0;
-            }
-
-            for (int city = 0; city < targetCities; city++)
-            {
-                bool nextCity = false;
-                int cityTarget = 0;
-
-                while (!nextCity)
+                if (BackgroundRef.Cities[i].Active)
                 {
-                    nextCity = true;
-                    cityTarget = Services.RandomMinMax(0, 5);
-
-                    for (int i = 0; i < targetCities; i++)
-                    {
-                        if (i != city)
-                        {
-                            if (cityTarget == targetedCities[i])
-                            {
-                                nextCity = false;
-                                break;
-                            }
-
-                            if (!BackgroundRef.Cities[cityTarget].Active)
-                            {
-                                nextCity = false;
-                                break;
-                            }
-                        }
-                    }
+                    citiesAvailable.Add(i);
                 }
+            }
 
-                targetedCities[city] = cityTarget;
+            List<int> targetedCities = new List<int>();
+
+            int maxCity = citiesAvailable.Count;
+
+            for (int city = 0; city < maxCity && city < 3; city++)
+            {
+                int cityTarget = Services.RandomMinMax(0, citiesAvailable.Count - 1);
+                targetedCities.Add(citiesAvailable[cityTarget]);
+                citiesAvailable.RemoveAt(cityTarget);
             }
 
             return targetedCities;

@@ -118,10 +118,6 @@ namespace MissileCommand.Entities
         {
             KeyboardState KBS = Keyboard.GetState();
 
-            if (!OldKeyState.IsKeyDown(Keys.Enter) && KBS.IsKeyDown(Keys.Enter))
-            {
-                GameLogicRef.NewGame();
-            }
         }
 
         void GameOver()
@@ -131,7 +127,11 @@ namespace MissileCommand.Entities
             TheGameOverText.ShowWords(true);
             TheStartANewGameText.ShowWords(true);
 
-            GameLogicRef.SwitchToAttract();
+            if (!OldKeyState.IsKeyDown(Keys.Enter) && KBS.IsKeyDown(Keys.Enter))
+            {
+                GameLogicRef.NewGame();
+            }
+
         }
 
         void HighScore()

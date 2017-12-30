@@ -68,7 +68,7 @@ namespace MissileCommand.Entities
                 if (Position.X > 650 || Position.X < -650)
                 {
                     Active = false;
-                    GameLogicRef.BomberTimer.Reset(Services.RandomMinMax(10.0f, 30.0f));
+                    GameLogicRef.ResetBomberTimer();
                     return;
                 }
 
@@ -81,11 +81,11 @@ namespace MissileCommand.Entities
                     }
                 }
 
-                GameLogicRef.CheckCollusion(this, GameLogicRef.BomberTimer);
+                GameLogicRef.CheckCollusion(this);
             }
         }
 
-        public void Spawn()
+        public void Spawn(Vector3 defuseColor)
         {
             if (Position.X < 0)
             {
@@ -99,7 +99,10 @@ namespace MissileCommand.Entities
             Rotation.X = 0;
             RotationAcceleration.X = 0;
             RotationVelocity.X = 0;
+            DefuseColor = defuseColor;
             AnimationStart = false;
+            Active = true;
+            Hit = false;
             MatrixUpdate();
         }
 
@@ -114,7 +117,9 @@ namespace MissileCommand.Entities
 
             if (AnimationTimer.Expired)
             {
+                GameLogicRef.ResetBomberTimer();
                 Active = false;
+                Hit = false;
             }
         }
     }

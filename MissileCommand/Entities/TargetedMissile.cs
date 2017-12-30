@@ -9,15 +9,15 @@ using Engine;
 
 namespace MissileCommand.Entities
 {
-    using Mod = AModel;
-
-    public class TargetedMissile : Mod
+    public class TargetedMissile : AModel
     {
-        public Missile TheMissile;
+        Missile TheMissiles;
+
+        public Missile Missiles { get => TheMissiles; }
 
         public TargetedMissile(Game game) : base(game)
         {
-            TheMissile = new Missile(game);
+            TheMissiles = new Missile(game);
 
             LoadContent();
             BeginRun();
@@ -51,20 +51,19 @@ namespace MissileCommand.Entities
         public void Deactivate()
         {
             Active = false;
-            TheMissile.Deactivate();
+            TheMissiles.Deactivate();
         }
 
-        public void Spawn(Vector3 basePos, Vector3 position)
+        public void Spawn(Vector3 basePos, Vector3 position, Vector3 defuseColor)
         {
             Position = position;
             Active = true;
 
-            TheMissile.Spawn(basePos, this, 300);
-            TheMissile.TrailColor = new Vector3(0.1f, 0, 2);
-            TheMissile.TimerAmount = 0.06f;
-            DefuseColor = new Vector3(0, 0.1f, 2);
+            TheMissiles.Spawn(basePos, this, 300, defuseColor);
+            TheMissiles.TimerAmount = 0.06f;
+            DefuseColor = defuseColor;
             MatrixUpdate();
-            TheMissile.MatrixUpdate();
+            TheMissiles.MatrixUpdate();
         }
     }
 }
