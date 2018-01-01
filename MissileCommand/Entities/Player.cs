@@ -31,6 +31,8 @@ namespace MissileCommand.Entities
         MouseState LastMouseState;
         KeyboardState LastKeyState;
 
+        Timer MouseReadTimer;
+
         float MoveSpeed = 400;
 
         public List<Explosion> Explosions { get => TheExplosions; }
@@ -41,6 +43,7 @@ namespace MissileCommand.Entities
             GameLogicRef = gameLogic;
             TheMissiles = new List<TargetedMissile>();
             TheExplosions = new List<Explosion>();
+            MouseReadTimer = new Timer(game, 0.0666f);
 
             LoadContent();
             BeginRun();
@@ -131,37 +134,46 @@ namespace MissileCommand.Entities
 
             if (theKeyboard.IsKeyDown(Keys.Up))
             {
-                StopMove();
-
-                if (Position.Y < 400)
-                    MoveUp();
+                MoveUp();
 
             }
             else if (theKeyboard.IsKeyDown(Keys.Down))
             {
-                StopMove();
-
-                if (Position.Y > -350)
-                    MoveDown();
+                MoveDown();
 
             }
             else if (theKeyboard.IsKeyDown(Keys.Left))
             {
-                StopMove();
-
-                if (Position.X > -580)
-                    MoveLeft();
+                MoveLeft();
 
             }
             else if (theKeyboard.IsKeyDown(Keys.Right))
             {
-                StopMove();
-
-                if (Position.X < 580)
-                    MoveRight();
+                MoveRight();
             }
             else
                 StopMove();
+
+            int centerX = Services.WindowWidth / 2;
+            int centerY = Services.WindowHeight / 2;
+
+            MouseState mouseState = Mouse.GetState();
+
+            if (mouseState.X > centerX)
+                MoveRight();
+            else if (mouseState.X < centerX)
+                MoveLeft();
+
+            if (mouseState.Y > centerY)
+                MoveDown();
+            else if (mouseState.Y < centerY)
+                MoveUp();
+
+            if (MouseReadTimer.Expired)
+            {
+                MouseReadTimer.Reset();
+                Mouse.SetPosition(centerX, centerY);
+            }
 
             if (!LastKeyState.IsKeyDown(Keys.Z))
             {
@@ -252,37 +264,49 @@ namespace MissileCommand.Entities
 
         void MoveUp()
         {
-            if (Position.Y < Services.WindowHeight * 0.5f)
+            if (Position.Y < Services.WindowHeight * 0.5f - 50)
             {
                 Velocity.Y = MoveSpeed;
-                Velocity.X = 0;
+            }
+            else
+            {
+                Velocity.Y = 0;
             }
         }
 
         void MoveDown()
         {
-            if (Position.Y > -Services.WindowHeight * 0.5f)
+            if (Position.Y > -Services.WindowHeight * 0.5f + 100)
             {
                 Velocity.Y = -MoveSpeed;
-                Velocity.X = 0;
+            }
+            else
+            {
+                Velocity.Y = 0;
             }
         }
 
         void MoveRight()
         {
-            if (Position.X < Services.WindowWidth * 0.5f)
+            if (Position.X < Services.WindowWidth * 0.5f - 50)
             {
                 Velocity.X = MoveSpeed;
-                Velocity.Y = 0;
+            }
+            else
+            {
+                Velocity.X = 0;
             }
         }
 
         void MoveLeft()
         {
-            if (Position.X > -Services.WindowWidth * 0.5f)
+            if (Position.X > -Services.WindowWidth * 0.5f + 50)
             {
                 Velocity.X = -MoveSpeed;
-                Velocity.Y = 0;
+            }
+            else
+            {
+                Velocity.X = 0;
             }
         }
 
