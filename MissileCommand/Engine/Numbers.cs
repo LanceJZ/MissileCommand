@@ -12,8 +12,8 @@ namespace Engine
 {
     public class Numbers : GameComponent, IUpdateableComponent, ILoadContent, IBeginable
     {
-        XnaModel[] NumberModels = new XnaModel[10];
-        List<Engine.AModel> NumberEs = new List<Engine.AModel>();
+        XnaModel[] NumberXNAModels = new XnaModel[10];
+        List<AModel> NumberModels = new List<AModel>();
         public Vector3 Position = Vector3.Zero;
         float Scale;
 
@@ -33,7 +33,7 @@ namespace Engine
         {
             for (int i = 0; i < 10; i++)
             {
-                NumberModels[i] = Game.Content.Load<XnaModel>("Models/Core/" + i.ToString());
+                NumberXNAModels[i] = Game.Content.Load<XnaModel>("Models/Core/" + i.ToString());
             }
         }
 
@@ -47,10 +47,16 @@ namespace Engine
             Position = locationStart;
             Scale = scale;
 
-            UpdateNumber(number);
+            ChangeNumber(number);
         }
 
-        public void UpdateNumber(int number)
+        public void ChangeNumber(int number, Vector3 defuseColor)
+        {
+            ChangeNumber(number);
+            ChangeColor(defuseColor);
+        }
+
+        public void ChangeNumber(int number)
         {
             int numberIn = number;
 
@@ -61,7 +67,7 @@ namespace Engine
                 //Make digit the modulus of 10 from number.
                 int digit = numberIn % 10;
                 //This sends a digit to the draw function with the location and size.
-                Engine.AModel numberE = InitiateNumber(digit);
+                AModel numberE = InitiateNumber(digit);
                 numberE.Scale = Scale;
                 // Dividing the int by 10, we discard the digit that was derived from the modulus operation.
                 numberIn /= 10;
@@ -69,14 +75,14 @@ namespace Engine
                 // with the lowest digit.
             } while (numberIn > 0);
 
-            UpdatePosition();
+            ChangePosition();
         }
 
-        public void UpdatePosition()
+        public void ChangePosition()
         {
             float space = 0;
 
-            foreach(Engine.AModel number in NumberEs)
+            foreach(AModel number in NumberModels)
             {
                 number.Position = Position - new Vector3(space, 0, 0);
                 number.MatrixUpdate();
@@ -84,46 +90,60 @@ namespace Engine
             }
         }
 
+        public void ChangePosition(Vector3 position)
+        {
+            Position = position;
+            ChangePosition();
+        }
+
+        public void ChangeColor(Vector3 defuseColor)
+        {
+            foreach (AModel number in NumberModels)
+            {
+                number.DefuseColor = defuseColor;
+            }
+        }
+
         public void ShowNumbers(bool show)
         {
-            if (NumberEs != null)
+            if (NumberModels != null)
             {
-                foreach (Engine.AModel number in NumberEs)
+                foreach (AModel number in NumberModels)
                 {
                     number.Active = show;
                 }
             }
         }
 
-        Engine.AModel InitiateNumber(int number)
+        AModel InitiateNumber(int number)
         {
-            Engine.AModel digit = new Engine.AModel(Game);
+            AModel digit = new AModel(Game);
 
             if (number < 0)
                 number = 0;
 
-            digit.SetModel(NumberModels[number]);
+            digit.SetModel(NumberXNAModels[number]);
             digit.Moveable = false;
             digit.ModelScale = new Vector3(Scale);
 
-            NumberEs.Add(digit);
+            NumberModels.Add(digit);
 
-            return NumberEs.Last();
+            return NumberModels.Last();
         }
 
-        void RemoveNumber(Engine.AModel numberE)
+        void RemoveNumber(AModel numberE)
         {
-            NumberEs.Remove(numberE);
+            NumberModels.Remove(numberE);
         }
 
         void ClearNumbers()
         {
-            foreach(Engine.AModel digit in NumberEs)
+            foreach(AModel digit in NumberModels)
             {
                 digit.Destroy();
             }
 
-            NumberEs.Clear();
+            NumberModels.Clear();
         }
     }
 }

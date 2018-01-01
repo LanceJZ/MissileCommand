@@ -21,8 +21,8 @@ namespace MissileCommand.Entities
     {
         GameLogic GameLogicRef;
 
-        Words BonusPointsText;
-        Words BonusCityText;
+        Words BonusPointsWords;
+        Words BonusCityWords;
         Numbers MissilePointsNumbers;
         Numbers CityPointsNumbers;
         List<AModel> MissileModels;
@@ -43,8 +43,8 @@ namespace MissileCommand.Entities
         int BonusCityAmount;
         bool IsDone = false;
 
-        public Words BonusCity { get => BonusCityText; }
-        public Words BonusPoints { get => BonusPointsText; }
+        public Words BonusCity { get => BonusCityWords; }
+        public Words BonusPoints { get => BonusPointsWords; }
         public Numbers MissilePoints { get => MissilePointsNumbers; }
         public Numbers CityPointes { get => CityPointsNumbers; }
         public bool Done { get => IsDone; }
@@ -52,8 +52,8 @@ namespace MissileCommand.Entities
         public WaveCompleteUI(Game game, GameLogic gameLogic) : base(game)
         {
             GameLogicRef = gameLogic;
-            BonusPointsText = new Words(game);
-            BonusCityText = new Words(game);
+            BonusPointsWords = new Words(game);
+            BonusCityWords = new Words(game);
             MissilePointsNumbers = new Numbers(game);
             CityPointsNumbers = new Numbers(game);
             MissileModels = new List<AModel>();
@@ -104,10 +104,10 @@ namespace MissileCommand.Entities
                 MissileModels.Last().MatrixUpdate();
             }
 
-            BonusPointsText.ProcessWords("BONUS POINTS", new Vector3(-120, 200, 10), 2);
-            BonusCityText.ProcessWords("BONUS CITY", new Vector3(-100, -200, 10), 2);
-            BonusPointsText.ShowWords(false);
-            BonusCityText.ShowWords(false);
+            BonusPointsWords.ProcessWords("BONUS POINTS", new Vector3(-120, 200, 10), 2);
+            BonusCityWords.ProcessWords("BONUS CITY", new Vector3(-100, -200, 10), 2);
+            BonusPointsWords.ShowWords(false);
+            BonusCityWords.ShowWords(false);
             MissilePointsNumbers.ProcessNumber(0, new Vector3(-160, 50, 10), 2);
             CityPointsNumbers.ProcessNumber(0, new Vector3(-160, -50, 10), 2);
             MissilePointsNumbers.ShowNumbers(false);
@@ -172,6 +172,13 @@ namespace MissileCommand.Entities
             base.Update(gameTime);
         }
 
+        public void ChangeColors(Vector3 playerDefuseColor, Vector3 enemyDefuseColor)
+        {
+            BonusPointsWords.ChangeColor(playerDefuseColor);
+            MissilePointsNumbers.ChangeColor(enemyDefuseColor);
+            CityPointsNumbers.ChangeColor(enemyDefuseColor);
+        }
+
         public void Bonus(int missileCount, int cityCount)
         {
             MissileCount = missileCount;
@@ -179,7 +186,7 @@ namespace MissileCommand.Entities
             CityCount = cityCount;
             BonusCityAmount = 0;
             IsDone = false;
-            BonusPointsText.ShowWords(true);
+            BonusPointsWords.ShowWords(true);
             Currentmode = WaveMode.CountMissiles;
         }
 
@@ -195,7 +202,7 @@ namespace MissileCommand.Entities
                 missile.Active = false;
             }
 
-            BonusPointsText.ShowWords(false);
+            BonusPointsWords.ShowWords(false);
             MissilePointsNumbers.ShowNumbers(false);
             CityPointsNumbers.ShowNumbers(false);
         }
@@ -223,8 +230,9 @@ namespace MissileCommand.Entities
                 CountSound.Play();
                 MissileModels[countedSoFar].Active = true;
                 MissileModels[countedSoFar].DefuseColor = GameLogicRef.PlayerColor;
+                GameLogicRef.TheActiveMissiles[countedSoFar].Active = false;
                 BonusMissileAmount += 5;
-                MissilePointsNumbers.UpdateNumber(BonusMissileAmount);
+                MissilePointsNumbers.ChangeNumber(BonusMissileAmount, GameLogicRef.EnemyColor);
             }
             else
             {
@@ -249,8 +257,9 @@ namespace MissileCommand.Entities
                 CountSound.Play();
                 CityModels[countedSoFar].Active = true;
                 CityModels[countedSoFar].DefuseColor = GameLogicRef.PlayerColor;
+                GameLogicRef.TheActiveCities[countedSoFar].Active = false;
                 BonusCityAmount += 100;
-                CityPointsNumbers.UpdateNumber(BonusCityAmount);
+                CityPointsNumbers.ChangeNumber(BonusCityAmount, GameLogicRef.EnemyColor);
             }
             else
             {

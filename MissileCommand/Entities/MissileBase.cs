@@ -108,6 +108,7 @@ namespace MissileCommand.Entities
             {
                 missile.DefuseColor = color;
                 missile.Active = true;
+                missile.Visable = true;
             }
         }
 

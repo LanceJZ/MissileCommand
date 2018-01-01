@@ -16,9 +16,9 @@ namespace MissileCommand.Entities
         GameLogic GameLogicRef;
 
         Numbers TheScoreDisplay;
-        Words TheScoreText;
-        Words TheGameOverText;
-        Words TheStartANewGameText;
+        Words TheScoreWords;
+        Words TheGameOverWords;
+        Words TheStartANewGameWords;
 
         KeyboardState OldKeyState;
 
@@ -33,9 +33,9 @@ namespace MissileCommand.Entities
             TheHighScores = new HighScoresUI(game, gameLogic);
             TheWaveComplete = new WaveCompleteUI(game, gameLogic);
             TheScoreDisplay = new Numbers(game);
-            TheScoreText = new Words(game);
-            TheGameOverText = new Words(game);
-            TheStartANewGameText = new Words(game);
+            TheScoreWords = new Words(game);
+            TheGameOverWords = new Words(game);
+            TheStartANewGameWords = new Words(game);
 
             // Screen resolution is 1200 X 900.
             // Y positive on top of window. So down is negative.
@@ -64,10 +64,10 @@ namespace MissileCommand.Entities
             string pressEnter = "PRESS ENTER TO START GAME";
 
             TheScoreDisplay.ProcessNumber(0, new Vector3(-250, 400, 100), 2);
-            TheScoreText.ProcessWords(scoretxt, new Vector3(-550, 400, 100), 2);
-            TheGameOverText.ProcessWords(gameOver,
+            TheScoreWords.ProcessWords(scoretxt, new Vector3(-550, 400, 100), 2);
+            TheGameOverWords.ProcessWords(gameOver,
                 new Vector3(-gameOver.Length * 20, 300, 100), 4); //-160
-            TheStartANewGameText.ProcessWords(pressEnter,
+            TheStartANewGameWords.ProcessWords(pressEnter,
                 new Vector3(-pressEnter.Length * 5, 250, 100), 1); //-125
         }
 
@@ -80,10 +80,18 @@ namespace MissileCommand.Entities
             base.Update(gameTime);
         }
 
+        public void ChangeColors(Vector3 playerDefuseColor, Vector3 enemyDefuseColor)
+        {
+            TheScoreDisplay.ChangeColor(enemyDefuseColor);
+            TheScoreWords.ChangeColor(playerDefuseColor);
+            TheGameOverWords.ChangeColor(playerDefuseColor);
+            TheStartANewGameWords.ChangeColor(playerDefuseColor);
+        }
+
         public void NewGame()
         {
-            TheGameOverText.ShowWords(false);
-            TheStartANewGameText.ShowWords(false);
+            TheGameOverWords.ShowWords(false);
+            TheStartANewGameWords.ShowWords(false);
             HighScores.NewGame();
         }
 
@@ -124,8 +132,8 @@ namespace MissileCommand.Entities
         {
             KeyboardState KBS = Keyboard.GetState();
 
-            TheGameOverText.ShowWords(true);
-            TheStartANewGameText.ShowWords(true);
+            TheGameOverWords.ShowWords(true);
+            TheStartANewGameWords.ShowWords(true);
 
             if (!OldKeyState.IsKeyDown(Keys.Enter) && KBS.IsKeyDown(Keys.Enter))
             {

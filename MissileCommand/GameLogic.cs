@@ -52,7 +52,8 @@ namespace MissileCommand
         SmartBomb TheSmartBomb;
         UILogic TheUI;
         List<City> OpenCities = new List<City>();
-        List<City> FilledCities = new List<City>();
+        List<City> ActiveCities = new List<City>();
+        List<AModel> ActiveMissiles = new List<AModel>();
 
         GameState GameMode = GameState.Attract;
         DefuseColor TheDefuseColor;
@@ -88,6 +89,8 @@ namespace MissileCommand
         public Bomber BomberRef { get => TheBomber; }
         public Satellite SatelliteRef { get => TheSatellite; }
         public SmartBomb SmartBombRef { get => TheSmartBomb; }
+        public List<City> TheActiveCities { get => ActiveCities; }
+        public List<AModel> TheActiveMissiles { get => ActiveMissiles; }
         public Vector3[] LevelColors { get => TheLevelColors; }
         public Vector3 EnemyColor { get => TheEnemyColor; }
         public Vector3 GroundColor { get => TheGroundColor; }
@@ -150,11 +153,17 @@ namespace MissileCommand
             RadarSoundTimer.Amount = (float)RadarSound.Duration.TotalSeconds;
             BonusCitySoundTimer.Amount = (float)NewCitySound.Duration.TotalSeconds + 1;
             TheGroundColor = TheLevelColors[4];
+            ThePlayerColor = TheLevelColors[1];
+            TheEnemyColor = TheLevelColors[3];
 
             foreach(AModel plot in BackgroundRef.Ground)
             {
                 plot.DefuseColor = TheGroundColor;
             }
+
+            TheUI.ChangeColors(ThePlayerColor, TheEnemyColor);
+            TheUI.HighScores.ChangeColor(ThePlayerColor, TheEnemyColor);
+            TheUI.WaveComplete.ChangeColors(ThePlayerColor, TheEnemyColor);
         }
 
         public override void Update(GameTime gameTime)
@@ -168,7 +177,7 @@ namespace MissileCommand
         {
             int muliplier = (int)(TheMissiles.Wave / 2.1f) + 1;
             Score += (score * muliplier);
-            TheUI.ScoreDisplay.UpdateNumber(Score);
+            TheUI.ScoreDisplay.ChangeNumber(Score, TheEnemyColor);
         }
 
         public void SwitchToAttract()
@@ -211,6 +220,8 @@ namespace MissileCommand
             int missileCount = 0;
             int cityCount = 0;
 
+            ActiveMissiles.Clear();
+
             foreach (MissileBase silo in BackgroundRef.Bases)
             {
                 foreach (AModel acm in silo.Missiles)
@@ -218,9 +229,8 @@ namespace MissileCommand
                     if (acm.Active)
                     {
                         missileCount++;
+                        ActiveMissiles.Add(acm);
                     }
-
-                    acm.Active = false;
                 }
             }
 
@@ -228,15 +238,13 @@ namespace MissileCommand
             {
                 if (city.Active)
                 {
-                    FilledCities.Add(city);
+                    ActiveCities.Add(city);
                     cityCount++;
                 }
                 else
                 {
                     OpenCities.Add(city);
                 }
-
-                city.Active = false;
             }
 
             TheUI.WaveComplete.Bonus(missileCount, cityCount);
@@ -282,12 +290,17 @@ namespace MissileCommand
                 city.DefuseColor = ThePlayerColor;
             }
 
-            foreach (City city in FilledCities)
+            foreach (City city in ActiveCities)
             {
                 city.Active = true;
+                city.Visable = true;
             }
 
-            FilledCities.Clear();
+            TheUI.ChangeColors(ThePlayerColor, TheEnemyColor);
+            TheUI.HighScores.ChangeColor(ThePlayerColor, TheEnemyColor);
+            TheUI.WaveComplete.ChangeColors(ThePlayerColor, TheEnemyColor);
+
+            ActiveCities.Clear();
             BackgroundRef.NewWave();
             MissilesRef.StartWave(TheEnemyColor);
             PlayerRef.DefuseColor = ThePlayerColor;
@@ -408,7 +421,7 @@ namespace MissileCommand
                 if (NewCityCount > 0)
                 {
                     int newCity = Services.RandomMinMax(0, OpenCities.Count - 1);
-                    FilledCities.Add(OpenCities[newCity]);
+                    ActiveCities.Add(OpenCities[newCity]);
                     OpenCities.RemoveAt(newCity);
                     NewCityCount--;
                 }

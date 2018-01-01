@@ -34,7 +34,7 @@ namespace MissileCommand.Entities
             EMC = gameLogic.MissilesRef;
             GameLogicRef = gameLogic;
             Trail = new AModel(game);
-            TrailTimer = new Timer(game, 0.2666f);
+            TrailTimer = new Timer(game, 0.0666f);
             SplitTimer = new Timer(game);
 
             LoadContent();

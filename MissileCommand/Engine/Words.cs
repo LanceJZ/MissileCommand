@@ -12,8 +12,8 @@ namespace Engine
 {
     public class Words : GameComponent, IUpdateableComponent, ILoadContent, IBeginable
     {
-        XnaModel[] WordModels = new XnaModel[27];
-        List<Engine.AModel> WordEs = new List<Engine.AModel>();
+        XnaModel[] WordXNAModels = new XnaModel[27];
+        List<AModel> WordModels = new List<AModel>();
         float Scale;
         int TextSize;
         public Vector3 Position = Vector3.Zero;
@@ -25,9 +25,9 @@ namespace Engine
 
         public override void Initialize()
         {
-            Services.AddLoadable(this);
-
             base.Initialize();
+            Services.AddLoadable(this);
+            Services.AddBeginable(this);
         }
 
         public void LoadContent()
@@ -36,10 +36,10 @@ namespace Engine
             {
                 char letter = (char)(i + 65);
 
-                WordModels[i] = Game.Content.Load<XnaModel>("Models/Core/" + letter.ToString());
+                WordXNAModels[i] = Game.Content.Load<XnaModel>("Models/Core/" + letter.ToString());
             }
 
-            WordModels[26] = Game.Content.Load<XnaModel>("Models/Core/UnderLine");
+            WordXNAModels[26] = Game.Content.Load<XnaModel>("Models/Core/UnderLine");
         }
 
         public void BeginRun()
@@ -52,10 +52,16 @@ namespace Engine
             Position = locationStart;
             Scale = scale;
 
-            UpdateWords(words);
+            ChangeWords(words);
         }
 
-        public void UpdateWords(string words)
+        public void ChangeWords(string words, Vector3 defuseColor)
+        {
+            ChangeWords(words);
+            ChangeColor(defuseColor);
+        }
+
+        public void ChangeWords(string words)
         {
             TextSize = words.Length;
             DeleteWords();
@@ -71,7 +77,7 @@ namespace Engine
 
                     if (letval > -1 && letval < 27)
                     {
-                        Engine.AModel letterE = InitiateLetter(letval);
+                        AModel letterE = InitiateLetter(letval);
                         letterE.Scale = Scale;
                     }
 
@@ -79,52 +85,66 @@ namespace Engine
 
                 if ((int)letter == 32)
                 {
-                    WordEs.Add(new Engine.AModel(Game));
+                    WordModels.Add(new AModel(Game));
                 }
             }
 
-            UpdatePosition();
+            ChangePosition();
         }
 
-        public void UpdatePosition()
+        public void ChangePosition()
         {
             float space = 0;
 
-            foreach (Engine.AModel letter in WordEs)
+            foreach (AModel word in WordModels)
             {
-                letter.Position = Position - new Vector3(space, 0, 0);
-                letter.MatrixUpdate();
+                word.Position = Position - new Vector3(space, 0, 0);
+                word.MatrixUpdate();
                 space -= Scale * 11.5f;
             }
         }
 
-        Engine.AModel InitiateLetter(int letter)
+        public void ChangePosition(Vector3 position)
         {
-            Engine.AModel letterModel = new Engine.AModel(Game);
-            letterModel.SetModel(WordModels[letter]);
+            Position = position;
+            ChangePosition();
+        }
+
+        public void ChangeColor(Vector3 defuseColor)
+        {
+            foreach (AModel word in WordModels)
+            {
+                word.DefuseColor = defuseColor;
+            }
+        }
+
+        AModel InitiateLetter(int letter)
+        {
+            AModel letterModel = new AModel(Game);
+            letterModel.SetModel(WordXNAModels[letter]);
             letterModel.Moveable = false;
             letterModel.ModelScale = new Vector3(Scale);
 
-            WordEs.Add(letterModel);
+            WordModels.Add(letterModel);
 
-            return WordEs.Last();
+            return WordModels.Last();
         }
 
         public void DeleteWords()
         {
-            foreach (Engine.AModel word in WordEs)
+            foreach (AModel word in WordModels)
             {
                 word.Destroy();
             }
 
-            WordEs.Clear();
+            WordModels.Clear();
         }
 
         public void ShowWords(bool show)
         {
-            if (WordEs != null)
+            if (WordModels != null)
             {
-                foreach (Engine.AModel word in WordEs)
+                foreach (AModel word in WordModels)
                 {
                     word.Active = show;
                     word.Visable = show;

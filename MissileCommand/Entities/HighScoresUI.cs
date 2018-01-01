@@ -217,12 +217,12 @@ namespace MissileCommand.Entities
 
                 foreach (HighScoreListModels list in HighScoreModels)
                 {
-                    list.Score.UpdateNumber(HighScoreData[p].Score);
+                    list.Score.ChangeNumber(HighScoreData[p].Score);
                     p++;
                 }
 
                 HighScore = HighScoreData[0].Score;
-                HighScoreNumbers.UpdateNumber(HighScore);
+                HighScoreNumbers.ChangeNumber(HighScore);
             }
         }
 
@@ -237,6 +237,27 @@ namespace MissileCommand.Entities
             }
 
             base.Update(gameTime);
+        }
+
+        public void ChangeColor(Vector3 playerDefuseColor, Vector3 enemyDefuseColor)
+        {
+            foreach(Words word in Instructions)
+            {
+                word.ChangeColor(playerDefuseColor);
+            }
+
+            foreach (HighScoreListModels line in HighScoreModels)
+            {
+                line.Name.ChangeColor(enemyDefuseColor);
+                line.Rank.ChangeColor(enemyDefuseColor);
+                line.Score.ChangeColor(enemyDefuseColor);
+            }
+
+            BonusCityWords.ChangeColor(playerDefuseColor);
+            BonusCityPointNumbers.ChangeColor(enemyDefuseColor);
+            HighScoreNumbers.ChangeColor(enemyDefuseColor);
+            HighScoresWords.ChangeColor(playerDefuseColor);
+            HighScoreWords.ChangeColor(playerDefuseColor);
         }
 
         public void NewGame()
@@ -297,7 +318,7 @@ namespace MissileCommand.Entities
                     NewHighScoreRank = rank;
                     ShowInstructions(true);
                     HighScoreSelectedLetters = "___".ToCharArray();
-                    NewHighScoreWords.UpdateWords("___");
+                    NewHighScoreWords.ChangeWords("___", GameLogicRef.PlayerColor);
                     NewHighScoreWords.ShowWords(true);
                     return true;
                 }
@@ -354,7 +375,7 @@ namespace MissileCommand.Entities
 
         void ProcessLettersSelected()
         {
-            NewHighScoreWords.UpdateWords(ProcessLettersToString());
+            NewHighScoreWords.ChangeWords(ProcessLettersToString(), GameLogicRef.PlayerColor);
         }
 
         void ProcessNewHighScore()
@@ -386,15 +407,15 @@ namespace MissileCommand.Entities
             {
                 if (HighScoreData[i].Score > 0)
                 {
-                    HighScoreModels[i].Score.UpdateNumber(HighScoreData[i].Score);
-                    HighScoreModels[i].Name.UpdateWords(HighScoreData[i].Name);
+                    HighScoreModels[i].Score.ChangeNumber(HighScoreData[i].Score, GameLogicRef.EnemyColor);
+                    HighScoreModels[i].Name.ChangeWords(HighScoreData[i].Name, GameLogicRef.EnemyColor);
 
                     if (HighScoreData[i].Score > HighScore)
                         HighScore = HighScoreData[i].Score;
                 }
             }
 
-            HighScoreNumbers.UpdateNumber(HighScore);
+            HighScoreNumbers.ChangeNumber(HighScore, GameLogicRef.EnemyColor);
         }
 
         void DataDecode()
