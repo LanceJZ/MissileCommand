@@ -27,7 +27,7 @@ namespace MissileCommand
         {
             Graphics = new GraphicsDeviceManager(this);
             Graphics.IsFullScreen = false;
-            Graphics.SynchronizeWithVerticalRetrace = false; //When true, 60FSP refresh rate locked.
+            Graphics.SynchronizeWithVerticalRetrace = true; //When true, 60FSP refresh rate locked.
             Graphics.GraphicsProfile = GraphicsProfile.HiDef;
             Graphics.PreferredBackBufferWidth = 1200;
             Graphics.PreferredBackBufferHeight = 900;

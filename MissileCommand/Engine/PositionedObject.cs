@@ -274,7 +274,7 @@ namespace Engine
         }
 
         /// <summary>
-        /// Returns a Vector3 direction of travel from angle and magnitude. Z is ignored.
+        /// Returns a Vector3 direction of travel from angle and magnitude. Only X and Y are calculated, Z = 0.
         /// </summary>
         /// <param name="angle"></param>
         /// <param name="magnitude"></param>
